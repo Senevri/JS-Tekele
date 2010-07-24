@@ -8,16 +8,36 @@ function hideId(id) {
 
 function showId(id) {
 	  document.getElementById(id).style.visibility='visible';
-	    document.getElementById(id).innerHTML = storedid[id];
-	      storedid[id]=null;
+	  if (storedid[id] != null){ 
+			document.getElementById(id).innerHTML = storedid[id];
+			storedid[id]=null;
+		}
 }
 
 var objects=new Array();
 
+function clickable(func){
+	document.getElementById(this.id).setAttribute("onClick", func);
+}
+
+function refresh(){
+	document.getElementById(this.id).innerHTML=this.content;
+}
+
 function moveable(id, content, x, y){
-	header = '<div id="'+id+'"class="moveable" style="position:absolute;left:' + x + 'px;top:'+ y + 'px;">'; 
-	footer = "</div>";
-	document.write(header + content + footer);
+	this.refresh = refresh;
+	this.select = select;
+	this.id = id;
+	this.content = content;
+	this.x = x; 
+	this.y = y;
+	this.clickable="";
+	this.header = '<div id="'+id+'"class="moveable" '+ this.clickable +' style="position:absolute;left:' + x + 'px;top:'+ y + 'px;">'; 
+	this.footer = "</div>";
+	function update(header, content, footer){	
+		document.write(header, content, footer);
+	}
+	update(this.header, this.content, this.footer);
 };
 
 function move(id, xshift, yshift){ // well, this is a game logic thing anyhow.
@@ -32,11 +52,18 @@ function move(id, xshift, yshift){ // well, this is a game logic thing anyhow.
 
 function testgraphics(){
 	initKeys();
-	moveable("helou", "hellowrld2", 200, 200);
+	helou = new moveable("helou", "hellowrld2", 200, 200);
 	hobgoblin = '<img src="hobgoblin.png"/>';
-	moveable("hob1", hobgoblin, 300, 300);
+	hob1 = new moveable("hob1", hobgoblin, 300, 300);
 
-	moveable("hob2", hobgoblin, 300, 332);
+	hob2 = new moveable("hob2", hobgoblin, 300, 332);
+	hob3 = new moveable("hob3", hobgoblin, 332, 300);
+	hob1.clickable=clickable;
+	hob1.clickable('selected = hob1.select()');
+	hob2.clickable=clickable;
+	hob2.clickable('selected = hob2.select()');
+	hob3.clickable=clickable;
+	hob3.clickable('selected = hob3.select()');
 }
 
 //function eternalloop(){

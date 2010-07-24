@@ -4,32 +4,42 @@
 
 //
 
+selected = "hob2";
+
+function select(){
+	selected = this.id;
+	return this.id;
+}
+
 /** Keydown
  * reaction to user input here...
- *
- */
+ * TODO: messaging
+ */ 
 function keydown(e){
+	debugClear();
+	debugWrite(selected);
 /*    if(game_running==false){
 	return;
     }*/
     //document.writeln("DEBUG keyup<br>");
     var code;
+	var speed=10;
     //if (!e) {var e = window.event;}
     if (e.keyCode) {code = e.keyCode;}
     else if (e.which) {code = e.which;}
 
     switch(code){ //works
     case 37://left
-	    move("hob2", -5, 0);
+	    move(selected, -speed, 0);
 	break;
     case 38://up
-	    move("hob2", 0, -5);
+	    move(selected, 0, -speed);
 	break;
     case 39://right
-	    move("hob2", 5, 0);
+	    move(selected, speed, 0);
 	break;
     case 40://down
-	    move("hob2", 0, 5);
+	    move(selected, 0, speed);
 	break;
     }
 }
@@ -38,6 +48,7 @@ function keydown(e){
  * reaction to user input here...
  *
  */
+ game_running ===true;
 function keyup(e){
     if(game_running===false){
 	return;
