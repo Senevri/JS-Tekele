@@ -24,6 +24,18 @@ function refresh(){
 	document.getElementById(this.id).innerHTML=this.content;
 }
 
+/*
+	moveable function to instant-jumping to some spot.
+*/
+function moveTo(id, xpos, ypos){ 
+	debugWrite("moveto:"+xpos+" "+ypos );
+	e = document.getElementById(id);
+	e.x = xpos;
+	e.y = ypos;
+	e.style.left=e.x+'px';
+	e.style.top=e.y+'px';
+}
+
 function moveable(id, content, x, y){
 	this.refresh = refresh;
 	this.select = select;
@@ -41,6 +53,7 @@ function moveable(id, content, x, y){
 };
 
 function move(id, xshift, yshift){ // well, this is a game logic thing anyhow.
+	debugWrite("move");
 	e = document.getElementById(id);
 	x = e.style.left;
 	y = e.style.top;
@@ -50,21 +63,6 @@ function move(id, xshift, yshift){ // well, this is a game logic thing anyhow.
 	e.style.top=((1*y)+yshift)+'px';
 }
 
-function testgraphics(){
-	initKeys();
-	helou = new moveable("helou", "hellowrld2", 200, 200);
-	hobgoblin = '<img src="hobgoblin.png"/>';
-	hob1 = new moveable("hob1", hobgoblin, 300, 300);
-
-	hob2 = new moveable("hob2", hobgoblin, 300, 332);
-	hob3 = new moveable("hob3", hobgoblin, 332, 300);
-	hob1.clickable=clickable;
-	hob1.clickable('selected = hob1.select()');
-	hob2.clickable=clickable;
-	hob2.clickable('selected = hob2.select()');
-	hob3.clickable=clickable;
-	hob3.clickable('selected = hob3.select()');
-}
 
 //function eternalloop(){
 //	setTimeout(eternalloop, 33);

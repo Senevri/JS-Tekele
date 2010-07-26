@@ -5,6 +5,8 @@
 //
 
 selected = "hob2";
+command = "default";
+game_running=true;
 
 function select(){
 	selected = this.id;
