@@ -5,7 +5,7 @@ testfoo();
 
 testgraphics();
 
-document.getElementById('main').setAttribute('onClick', 'moveTo(selected, event.clientX, event.clientY)');
+document.getElementById('main').setAttribute('onClick', 'moveTo(selected, event.clientX-16, event.clientY-16)');
 
 button = new moveable("button", "show all", 500, 10);
 button.clickable = clickable;

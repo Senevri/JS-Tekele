@@ -28,7 +28,7 @@ function refresh(){
 	moveable function to instant-jumping to some spot.
 */
 function moveTo(id, xpos, ypos){ 
-	debugWrite("moveto:"+xpos+" "+ypos );
+	//debugWrite("moveto:"+xpos+" "+ypos );
 	e = document.getElementById(id);
 	e.x = xpos;
 	e.y = ypos;
