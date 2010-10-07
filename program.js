@@ -1,6 +1,8 @@
 //document.writeln('hellowrld');
 //document.write('<div id="debug" ></div>');
-debugWrite("debug:");
+
+debug = new debug();
+debug.write("debug:");
 testfoo();
 
 testgraphics();
@@ -14,11 +16,28 @@ button.clickable('showId("bar")');
 button2 = new moveable("button2", "mrt", 500, 30);
 button2.clickable = clickable;
 button2.clickable('button2.select()');
-
+war1 = new moveable("warrior", '<img src="warrior.png"/>', 200, 300);
+war1.clickable = clickable;
+war1.clickable('selected = war1.select()');
+war1.onselect=animate;
+war1.frames = ["warrior.png", "warrior2.png"];
+war1.curframe = 0;
+war1.maxframe = 1;
 
 Function.prototype.method = function (name, func) {
     this.prototype[name] = func;
     return this;
+};
+
+function animate(){
+//debug.write("animate:"+this.frames[this.curframe]);
+if (this.curframe<this.maxframe){
+	this.curframe++;
+} else {
+	this.curframe=0;
+}
+this.content='<img src="'+this.frames[this.curframe]+'"/>';
+this.refresh();
 };
 
 function testgraphics(){

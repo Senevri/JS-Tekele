@@ -28,7 +28,7 @@ function refresh(){
 	moveable function to instant-jumping to some spot.
 */
 function moveTo(id, xpos, ypos){ 
-	//debugWrite("moveto:"+xpos+" "+ypos );
+	//debug.write("moveto:"+xpos+" "+ypos );
 	e = document.getElementById(id);
 	e.x = xpos;
 	e.y = ypos;
@@ -43,7 +43,7 @@ function moveable(id, content, x, y){
 	this.content = content;
 	this.x = x; 
 	this.y = y;
-	this.clickable="";
+//	this.clickable="";
 	this.header = '<div id="'+id+'"class="moveable" '+ this.clickable +' style="position:absolute;left:' + x + 'px;top:'+ y + 'px;">'; 
 	this.footer = "</div>";
 	function update(header, content, footer){	
@@ -53,7 +53,7 @@ function moveable(id, content, x, y){
 };
 
 function move(id, xshift, yshift){ // well, this is a game logic thing anyhow.
-	debugWrite("move");
+	debug.write("move");
 	e = document.getElementById(id);
 	x = e.style.left;
 	y = e.style.top;

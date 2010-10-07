@@ -10,6 +10,7 @@ game_running=true;
 
 function select(){
 	selected = this.id;
+	this.onselect();
 	return this.id;
 }
 
