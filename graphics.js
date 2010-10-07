@@ -64,6 +64,4 @@ function move(id, xshift, yshift){ // well, this is a game logic thing anyhow.
 }
 
 
-//function eternalloop(){
-//	setTimeout(eternalloop, 33);
-//}
+
