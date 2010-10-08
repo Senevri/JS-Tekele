@@ -59,7 +59,6 @@ function showstats(){
 
 function moveAction(){
 //	debug.write("moveaction");
-	//if(!ev) var ev = window.event;
 	action = "moveToAndDisable(selected)";
 	document.onmousemove = enableMainAction;
 }
@@ -72,9 +71,7 @@ function attackAction(){
 
 
 function enableMainAction(){
-	setTimeout(600);
 	document.getElementById('main').setAttribute('onClick', action);
-	//debug.write("foo!");
 	document.onmousemove="";
 }
 
@@ -84,9 +81,8 @@ function attackTargetedObject(id){
 }
 function moveToAndDisable(id){ 
 	//debug.write("moveto:"+xpos+" "+ypos );
-	setTimeout(600);
-	xpos = event.clientX;
-	ypos = event.clientY;
+	xpos = event.clientX-16;
+	ypos = event.clientY-16;
 
 	e = document.getElementById(id);
 	e.x = xpos;
@@ -114,7 +110,9 @@ function testgraphics(){
 	helou = new moveable("helou", "hellowrld2", 200, 200);
 	hobgoblin = '<img src="hobgoblin.png"/>';
 	hob1 = new moveable("hob1", hobgoblin, 300, 300);
-
+	hob1.onselect = showstats;
+	hob1.stats = {"hp":22, "atk":4, "def":17 };
+	hob1.moveAction=moveAction;
 	hob2 = new moveable("hob2", hobgoblin, 300, 332);
 	hob3 = new moveable("hob3", hobgoblin, 332, 300);
 	hob1.clickable=clickable;
