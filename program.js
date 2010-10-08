@@ -1,11 +1,14 @@
 //document.writeln('hellowrld');
 //document.write('<div id="debug" ></div>');
-debugWrite("debug:");
+
+action = null;
+debug = new debug();
+debug.write("debug:");
 testfoo();
 
 testgraphics();
 
-document.getElementById('main').setAttribute('onClick', 'moveTo(selected, event.clientX-16, event.clientY-16)');
+//document.getElementById('main').setAttribute('onClick', 'moveTo(selected, event.clientX-16, event.clientY-16)');
 
 button = new moveable("button", "show all", 500, 10);
 button.clickable = clickable;
@@ -14,19 +17,102 @@ button.clickable('showId("bar")');
 button2 = new moveable("button2", "mrt", 500, 30);
 button2.clickable = clickable;
 button2.clickable('button2.select()');
+//war1 = new testWar("war1");
+war1 = new moveable("war1", '', 200, 300);
+war1.testWar = testWar;
+war1.testWar();
 
+function testWar(){
+//this = new moveable(name, '<img src="warrior.png"/>', 200, 300);
+
+this.clickable = clickable;
+//var params = 'selected=' + this.id + '.select()';
+this.clickable('selected='+this.id+'.select()');
+this.animate=animate;
+this.onselect=showstats;
+this.frames = ["warrior.png", "warrior2.png"];
+this.curframe = 0;
+this.maxframe = 1;
+this.stats = {"hp":10, "atk":1, "def":15 };
+eternalloop();
+this.moveAction = moveAction;
+this.attackAction = attackAction;
+}
+function eternalloop(){
+	war1.animate();
+	setTimeout(eternalloop, 200);
+}
 
 Function.prototype.method = function (name, func) {
     this.prototype[name] = func;
     return this;
 };
 
+function showstats(){
+	//debug.write("onselect");
+	var stats = 'HP:' + this.stats.hp + ' ATK:' + this.stats.atk + ' DEF:' + this.stats.def;
+	var menu = '<a href="#" onClick="'+this.id+'.moveAction();" >move</a>|<a href="#" onClick="'+this.id+'.attackAction();">attack</a> ';
+	//debug.write(stats);
+
+	document.getElementById('menu').innerHTML = menu+stats; 
+}
+
+function moveAction(){
+//	debug.write("moveaction");
+	action = "moveToAndDisable(selected)";
+	document.onmousemove = enableMainAction;
+}
+
+function attackAction(){
+	// need to make the onclick or rather onselect action attack a target.. for that we need a objectlist.
+	action="attackTargetedObject(selected)";
+	document.onmousemove = enableMainAction;
+}
+
+
+function enableMainAction(){
+	document.getElementById('main').setAttribute('onClick', action);
+	document.onmousemove="";
+}
+
+function attackTargetedObject(id){
+	debug.write(selected);
+	document.getElementById('main').setAttribute('onClick', '#');
+}
+function moveToAndDisable(id){ 
+	//debug.write("moveto:"+xpos+" "+ypos );
+	xpos = event.clientX-16;
+	ypos = event.clientY-16;
+
+	e = document.getElementById(id);
+	e.x = xpos;
+	e.y = ypos;
+	e.style.left=e.x+'px';
+	e.style.top=e.y+'px';
+	document.getElementById('main').setAttribute('onClick', '#');
+}
+
+function animate(){
+//debug.write("animate:"+this.frames[this.curframe]);
+if (this.curframe<this.maxframe){
+	this.curframe++;
+} else {
+	this.curframe=0;
+}
+
+this.content='<img src="'+this.frames[this.curframe]+'"/>';
+this.refresh();
+};
+
 function testgraphics(){
 	initKeys();
+	
 	helou = new moveable("helou", "hellowrld2", 200, 200);
 	hobgoblin = '<img src="hobgoblin.png"/>';
 	hob1 = new moveable("hob1", hobgoblin, 300, 300);
-
+	hob1.onselect = showstats;
+	hob1.stats = {"hp":22, "atk":4, "def":17 };
+	hob1.moveAction=moveAction;
 	hob2 = new moveable("hob2", hobgoblin, 300, 332);
 	hob3 = new moveable("hob3", hobgoblin, 332, 300);
 	hob1.clickable=clickable;
@@ -35,6 +121,7 @@ function testgraphics(){
 	hob2.clickable('selected = hob2.select()');
 	hob3.clickable=clickable;
 	hob3.clickable('selected = hob3.select()');
+	
 }
 
 function testfoo(){
