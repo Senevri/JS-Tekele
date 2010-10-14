@@ -72,7 +72,7 @@ function attackAction(){
 
 
 function enableMainAction(){
-	setTimeout(600);
+	//setTimeout(600);
 	document.getElementById('main').setAttribute('onClick', action);
 	//debug.write("foo!");
 	document.onmousemove="";
@@ -84,7 +84,7 @@ function attackTargetedObject(id){
 }
 function moveToAndDisable(id){ 
 	//debug.write("moveto:"+xpos+" "+ypos );
-	setTimeout(600);
+	//setTimeout(600);
 	xpos = event.clientX;
 	ypos = event.clientY;
 
