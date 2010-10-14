@@ -30,11 +30,10 @@ function testWar(){
 this.clickable = clickable;
 //var params = 'selected=' + this.id + '.select()';
 this.clickable('selected='+this.id+'.select()');
-this.animate=animate;
+this.animation=loadanimation;
+
 this.onselect=showstats;
-this.frames = ["warrior.png", "warrior2.png"];
-this.curframe = 0;
-this.maxframe = 1;
+this.animation(["warrior.png", "warrior2.png"]);
 this.stats = {"hp":10, "atk":1, "def":15 };
 eternalloop();
 this.moveAction = moveAction;
@@ -42,6 +41,7 @@ this.attackAction = attackAction;
 
 }
 function eternalloop(){
+	//war1.animation.animate();
 	war1.animate();
 	setTimeout(eternalloop, 200);
 }
@@ -96,18 +96,6 @@ function moveToAndDisable(id){
 	e.style.top=e.y+'px';
 	document.getElementById('main').setAttribute('onClick', '');
 }
-
-function animate(){
-//debug.write("animate:"+this.frames[this.curframe]);
-if (this.curframe<this.maxframe){
-	this.curframe++;
-} else {
-	this.curframe=0;
-}
-
-this.content='<img src="'+this.frames[this.curframe]+'" style="width:32px; height:32px;"/>';
-this.refresh();
-};
 
 function testgraphics(){
 	
