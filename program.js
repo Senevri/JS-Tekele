@@ -1,5 +1,7 @@
 //document.writeln('hellowrld');
 //document.write('<div id="debug" ></div>');
+initKeys();
+initMouse();
 
 action = null;
 debug = new debug();
@@ -37,6 +39,7 @@ this.stats = {"hp":10, "atk":1, "def":15 };
 eternalloop();
 this.moveAction = moveAction;
 this.attackAction = attackAction;
+
 }
 function eternalloop(){
 	war1.animate();
@@ -61,35 +64,37 @@ function moveAction(){
 //	debug.write("moveaction");
 	action = "moveToAndDisable(selected)";
 	document.onmousemove = enableMainAction;
+//	enableMainAction();
 }
 
 function attackAction(){
 	// need to make the onclick or rather onselect action attack a target.. for that we need a objectlist.
 	action="attackTargetedObject(selected)";
 	document.onmousemove = enableMainAction;
+//	enableMainAction();
 }
 
 
 function enableMainAction(){
 	document.getElementById('main').setAttribute('onClick', action);
-	document.onmousemove="";
+	document.onmousemove=getMouseXY;
 }
 
 function attackTargetedObject(id){
 	debug.write(selected);
-	document.getElementById('main').setAttribute('onClick', '#');
+	document.getElementById('main').setAttribute('onClick', '');
 }
 function moveToAndDisable(id){ 
 	//debug.write("moveto:"+xpos+" "+ypos );
-	xpos = event.clientX-16;
-	ypos = event.clientY-16;
+	xpos = mouse.clientX-16;
+	ypos = mouse.clientY-16;
 
 	e = document.getElementById(id);
 	e.x = xpos;
 	e.y = ypos;
 	e.style.left=e.x+'px';
 	e.style.top=e.y+'px';
-	document.getElementById('main').setAttribute('onClick', '#');
+	document.getElementById('main').setAttribute('onClick', '');
 }
 
 function animate(){
@@ -100,12 +105,11 @@ if (this.curframe<this.maxframe){
 	this.curframe=0;
 }
 
-this.content='<img src="'+this.frames[this.curframe]+'"/>';
+this.content='<img src="'+this.frames[this.curframe]+'" style="width:32px; height:32px;"/>';
 this.refresh();
 };
 
 function testgraphics(){
-	initKeys();
 	
 	helou = new moveable("helou", "hellowrld2", 200, 200);
 	hobgoblin = '<img src="hobgoblin.png"/>';

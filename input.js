@@ -7,6 +7,9 @@
 selected = "hob2";
 command = "default";
 game_running=true;
+var IE = document.all?true:false;	
+var mouse="";
+
 
 function select(){
 	selected = this.id;
@@ -92,5 +95,31 @@ function initKeys() {
 	}
 
  }
+
+function initMouse() {
+	// If NS -- that is, !IE -- then set up for mouse capture
+	if (!IE) document.captureEvents(Event.MOUSEMOVE)
+	//
+	// // Set-up to use getMouseXY function onMouseMove
+	document.onmousemove = getMouseXY;
+
+}
+
+function getMouseXY(ev) {
+	mouse = ev;
+	if (IE) { // grab the x-y pos.s if browser is IE
+		mouse.X = event.clientX + document.body.scrollLeft;
+		mouse.Y = event.clientY + document.body.scrollTop;
+	} else {  // grab the x-y pos.s if browser is NS
+		mouse.X = ev.pageX;
+		mouse.Y = ev.pageY;
+
+	}
+}
+
+function isdefined( variable)
+{
+	    return (typeof(window[variable]) == "undefined")?  false: true;
+}
 
 
