@@ -37,14 +37,19 @@ this.animation[1] = new animation(this.id, ["warrior.png", "warrior.png", "warri
 
 this.onselect=showstats;
 this.stats = {"hp":10, "atk":1, "def":15 };
-eternalloop();;
+actor = this;
+anim = 0;
 this.moveAction = moveAction;
 this.attackAction = attackAction;
 
+playing = setTimeout('animationloop(actor)', 200);
 }
-function eternalloop(){
-	war1.animation[1].play();
-	setTimeout(eternalloop, 200);
+var actor;
+var anim;
+
+function animationloop(actor){
+	actor.animation[anim].play();
+	playing = setTimeout("animationloop(actor)", 200);
 }
 
 Function.prototype.method = function (name, func) {
@@ -82,8 +87,8 @@ function enableMainAction(){
 }
 
 function attackTargetedObject(id){
-	debug.write(selected);
-	document.getElementById('main').setAttribute('onClick', '');
+	//debug.write(selected);
+	document.getElementById('main').setAttribute('onClick', 'clearTimeout(playing)');
 }
 function moveToAndDisable(id){ 
 	//debug.write("moveto:"+xpos+" "+ypos );
