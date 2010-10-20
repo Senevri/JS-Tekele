@@ -31,8 +31,9 @@ this.clickable = clickable;
 //var params = 'selected=' + this.id + '.select()';
 this.clickable('selected='+this.id+'.select()');
 //this.animation = new animation_init();
-this.animation = new animation(this.id, ["warrior.png", "warrior2.png"])
-this.animation = new animation(this.id, ["warrior.png", "warrior.png", "warrior2.png"])
+this.animation = []
+this.animation[0] = new animation(this.id, ["warrior.png", "warrior2.png"])
+this.animation[1] = new animation(this.id, ["warrior.png", "warrior.png", "warrior2.png"])
 
 this.onselect=showstats;
 this.stats = {"hp":10, "atk":1, "def":15 };
@@ -42,7 +43,7 @@ this.attackAction = attackAction;
 
 }
 function eternalloop(){
-	war1.animation.play(0);
+	war1.animation[1].play();
 	setTimeout(eternalloop, 200);
 }
 
