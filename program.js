@@ -30,19 +30,19 @@ function testWar(){
 this.clickable = clickable;
 //var params = 'selected=' + this.id + '.select()';
 this.clickable('selected='+this.id+'.select()');
-this.animation=loadanimation;
+//this.animation = new animation_init();
+this.animation = new animation(this.id, ["warrior.png", "warrior2.png"])
+this.animation = new animation(this.id, ["warrior.png", "warrior.png", "warrior2.png"])
 
 this.onselect=showstats;
-this.animation(["warrior.png", "warrior2.png"]);
 this.stats = {"hp":10, "atk":1, "def":15 };
-eternalloop();
+eternalloop();;
 this.moveAction = moveAction;
 this.attackAction = attackAction;
 
 }
 function eternalloop(){
-	//war1.animation.animate();
-	war1.animate();
+	war1.animation.play(0);
 	setTimeout(eternalloop, 200);
 }
 
