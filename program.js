@@ -25,24 +25,18 @@ war1.testWar = testWar;
 war1.testWar();
 
 function testWar(){
-//this = new moveable(name, '<img src="warrior.png"/>', 200, 300);
-
-this.clickable = clickable;
-//var params = 'selected=' + this.id + '.select()';
-this.clickable('selected='+this.id+'.select()');
-//this.animation = new animation_init();
-this.animation = []
-this.animation[0] = new animation(this.id, ["warrior.png", "warrior2.png"])
-this.animation[1] = new animation(this.id, ["warrior.png", "warrior.png", "warrior2.png"])
-
-this.onselect=showstats;
-this.stats = {"hp":10, "atk":1, "def":15 };
-actor = this;
-anim = 0;
-this.moveAction = moveAction;
-this.attackAction = attackAction;
-
-playing = setTimeout('animationloop(actor)', 200);
+	this.clickable = clickable;
+	this.clickable('selected='+this.id+'.select()');
+	this.animation = []
+		this.animation["walk"] = new animation(this.id, ["warrior.png", "warrior2.png"])
+		this.animation["idle"] = new animation(this.id, ["warrior.png"])
+		this.onselect=showstats;
+	this.stats = {"hp":10, "atk":1, "def":15 };
+	actor = this;
+	anim = "idle";
+	this.moveAction = moveAction;
+	this.attackAction = attackAction;
+	playing = setTimeout('animationloop(actor)', 200);
 }
 var actor;
 var anim;
@@ -51,10 +45,13 @@ function animationloop(actor){
 	actor.animation[anim].play();
 	playing = setTimeout("animationloop(actor)", 200);
 }
+function changeAnimation(){
+
+}
 
 Function.prototype.method = function (name, func) {
-    this.prototype[name] = func;
-    return this;
+	this.prototype[name] = func;
+	return this;
 };
 
 function showstats(){
@@ -67,10 +64,11 @@ function showstats(){
 }
 
 function moveAction(){
-//	debug.write("moveaction");
+	//	debug.write("moveaction");
 	action = "moveToAndDisable(selected)";
+	anim="walk"
 	document.onmousemove = enableMainAction;
-//	enableMainAction();
+	//	enableMainAction();
 }
 
 function attackAction(){
@@ -88,7 +86,7 @@ function enableMainAction(){
 
 function attackTargetedObject(id){
 	//debug.write(selected);
-	document.getElementById('main').setAttribute('onClick', 'clearTimeout(playing)');
+	document.getElementById('main').setAttribute('onClick', 'changeAnimation()');
 }
 function moveToAndDisable(id){ 
 	//debug.write("moveto:"+xpos+" "+ypos );
@@ -101,6 +99,7 @@ function moveToAndDisable(id){
 	e.style.left=e.x+'px';
 	e.style.top=e.y+'px';
 	document.getElementById('main').setAttribute('onClick', '');
+	anim="idle"
 }
 
 function testgraphics(){
