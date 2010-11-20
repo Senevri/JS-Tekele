@@ -32,7 +32,7 @@ this.clickable = clickable;
 this.clickable('selected='+this.id+'.select()');
 //this.animation = new animation_init();
 this.animation = []
-this.animation["walk"] = new animation(this.id, ["warrior.png", "warrior2.png"], 200)
+this.animation["walk"] = new animation(this.id, ["warrior.png", "warrior3.png"], 200)
 //this.animation[1] = new animation(this.id, ["warrior.png", "warrior.png", "warrior2.png"])
 this.animation["idle"] = new animation(this.id, ["warrior2.png", "warrior3.png"], 1000)
 
