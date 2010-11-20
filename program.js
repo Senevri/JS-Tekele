@@ -23,7 +23,7 @@ war1.testWar = testWar;
 war1.testWar();
 
 function testWar(){
-//this = new moveable(name, '<img src="warrior.png"/>', 200, 300);
+//this = new moveable(name, '<div style="width:32px; height:32px;"><img src="warrior.png"/></div>', 200, 300);
 
 this.clickable = clickable;
 //var params = 'selected=' + this.id + '.select()';
