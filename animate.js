@@ -4,10 +4,11 @@ function is_array(input){
 function animation_init(){
 	this.animation = [];
 }
-function animation(id, animation){
+function animation(id, animation, delay){
 	this.id = id;
 	this.frames;
 	this.frames = animation;	
+	this.delay = delay;
 	this.curframe = 0;
 	this.maxframe = this.frames.length-1;
 	this.refresh = function () {

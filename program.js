@@ -32,13 +32,14 @@ this.clickable = clickable;
 this.clickable('selected='+this.id+'.select()');
 //this.animation = new animation_init();
 this.animation = []
-this.animation[0] = new animation(this.id, ["warrior.png", "warrior2.png"])
-this.animation[1] = new animation(this.id, ["warrior.png", "warrior.png", "warrior2.png"])
+this.animation["walk"] = new animation(this.id, ["warrior.png", "warrior2.png"], 200)
+//this.animation[1] = new animation(this.id, ["warrior.png", "warrior.png", "warrior2.png"])
+this.animation["idle"] = new animation(this.id, ["warrior2.png", "warrior3.png"], 1000)
 
 this.onselect=showstats;
 this.stats = {"hp":10, "atk":1, "def":15 };
 actor = this;
-anim = 0;
+anim = "idle";
 this.moveAction = moveAction;
 this.attackAction = attackAction;
 
@@ -49,7 +50,7 @@ var anim;
 
 function animationloop(actor){
 	actor.animation[anim].play();
-	playing = setTimeout("animationloop(actor)", 200);
+	playing = setTimeout("animationloop(actor)", actor.animation[anim].delay);
 }
 
 Function.prototype.method = function (name, func) {
@@ -70,6 +71,7 @@ function moveAction(){
 //	debug.write("moveaction");
 	action = "moveToAndDisable(selected)";
 	document.onmousemove = enableMainAction;
+	anim="walk";
 //	enableMainAction();
 }
 
@@ -101,6 +103,7 @@ function moveToAndDisable(id){
 	e.style.left=e.x+'px';
 	e.style.top=e.y+'px';
 	document.getElementById('main').setAttribute('onClick', '');
+	anim="idle";
 }
 
 function testgraphics(){
