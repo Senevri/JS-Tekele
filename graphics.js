@@ -14,12 +14,9 @@ function showId(id) {
 		}
 }
 
-var objects=new Array();
-
 function clickable(func){
 	document.getElementById(this.id).setAttribute("onClick", func);
 }
-
 function refresh(){
 	document.getElementById(this.id).innerHTML=this.content;
 }

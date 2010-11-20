@@ -1,5 +1,7 @@
 //document.writeln('hellowrld');
 //document.write('<div id="debug" ></div>');
+initKeys();
+initMouse();
 
 action = null;
 debug = new debug();
@@ -28,19 +30,26 @@ function testWar(){
 this.clickable = clickable;
 //var params = 'selected=' + this.id + '.select()';
 this.clickable('selected='+this.id+'.select()');
-this.animate=animate;
+//this.animation = new animation_init();
+this.animation = []
+this.animation[0] = new animation(this.id, ["warrior.png", "warrior2.png"])
+this.animation[1] = new animation(this.id, ["warrior.png", "warrior.png", "warrior2.png"])
+
 this.onselect=showstats;
-this.frames = ["warrior.png", "warrior2.png"];
-this.curframe = 0;
-this.maxframe = 1;
 this.stats = {"hp":10, "atk":1, "def":15 };
-eternalloop();
+actor = this;
+anim = 0;
 this.moveAction = moveAction;
 this.attackAction = attackAction;
+
+playing = setTimeout('animationloop(actor)', 200);
 }
-function eternalloop(){
-	war1.animate();
-	setTimeout(eternalloop, 200);
+var actor;
+var anim;
+
+function animationloop(actor){
+	actor.animation[anim].play();
+	playing = setTimeout("animationloop(actor)", 200);
 }
 
 Function.prototype.method = function (name, func) {
@@ -61,51 +70,40 @@ function moveAction(){
 //	debug.write("moveaction");
 	action = "moveToAndDisable(selected)";
 	document.onmousemove = enableMainAction;
+//	enableMainAction();
 }
 
 function attackAction(){
 	// need to make the onclick or rather onselect action attack a target.. for that we need a objectlist.
 	action="attackTargetedObject(selected)";
 	document.onmousemove = enableMainAction;
+//	enableMainAction();
 }
 
 
 function enableMainAction(){
 	document.getElementById('main').setAttribute('onClick', action);
-	document.onmousemove="";
+	document.onmousemove=getMouseXY;
 }
 
 function attackTargetedObject(id){
-	debug.write(selected);
-	document.getElementById('main').setAttribute('onClick', '#');
+	//debug.write(selected);
+	document.getElementById('main').setAttribute('onClick', 'clearTimeout(playing)');
 }
 function moveToAndDisable(id){ 
 	//debug.write("moveto:"+xpos+" "+ypos );
-	xpos = event.clientX-16;
-	ypos = event.clientY-16;
+	xpos = mouse.clientX-16;
+	ypos = mouse.clientY-16;
 
 	e = document.getElementById(id);
 	e.x = xpos;
 	e.y = ypos;
 	e.style.left=e.x+'px';
 	e.style.top=e.y+'px';
-	document.getElementById('main').setAttribute('onClick', '#');
+	document.getElementById('main').setAttribute('onClick', '');
 }
-
-function animate(){
-//debug.write("animate:"+this.frames[this.curframe]);
-if (this.curframe<this.maxframe){
-	this.curframe++;
-} else {
-	this.curframe=0;
-}
-
-this.content='<img src="'+this.frames[this.curframe]+'"/>';
-this.refresh();
-};
 
 function testgraphics(){
-	initKeys();
 	
 	helou = new moveable("helou", "hellowrld2", 200, 200);
 	hobgoblin = '<img src="hobgoblin.png"/>';
