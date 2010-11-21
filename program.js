@@ -26,7 +26,7 @@ war1 = new moveable("war1", '', 128, 192);
 war1.testWar = testWar;
 war1.testWar();
 view_animation(["warrior.png", "warrior3.png"], 2);
-
+test_widgets();
 
 
 function testWar(){
