@@ -6,23 +6,28 @@ initMouse();
 action = null;
 debug = new debug();
 debug.write("debug:");
-testfoo();
 
-testgraphics();
+//testfoo();
+
+//testgraphics();
 
 //document.getElementById('main').setAttribute('onClick', 'moveTo(selected, event.clientX-16, event.clientY-16)');
 
-button = new moveable("button", "show all", 500, 10);
+/*button = new moveable("button", "show all", 500, 10);
 button.clickable = clickable;
 button.clickable('showId("bar")');
 
 button2 = new moveable("button2", "mrt", 500, 30);
 button2.clickable = clickable;
 button2.clickable('button2.select()');
+*/
 //war1 = new testWar("war1");
-war1 = new moveable("war1", '', 200, 300);
+war1 = new moveable("war1", '', 128, 192);
 war1.testWar = testWar;
 war1.testWar();
+view_animation(["warrior.png", "warrior3.png"], 2);
+
+
 
 function testWar(){
 //this = new moveable(name, '<div style="width:64px; height:64px;"><img src="warrior.png"/></div>', 200, 300);
@@ -31,10 +36,10 @@ this.clickable = clickable;
 //var params = 'selected=' + this.id + '.select()';
 this.clickable('selected='+this.id+'.select()');
 //this.animation = new animation_init();
-this.animation = []
-this.animation["walk"] = new animation(this.id, ["warrior.png", "warrior3.png"], 200)
+this.animation = [];
+this.animation["walk"] = new animation(this.id, ["warrior.png", "warrior3.png"], 200);
 //this.animation[1] = new animation(this.id, ["warrior.png", "warrior.png", "warrior2.png"])
-this.animation["idle"] = new animation(this.id, ["warrior2.png", "warrior3.png"], 1000)
+this.animation["idle"] = new animation(this.id, ["warrior2.png", "warrior3.png"], 1000);
 
 this.onselect=showstats;
 this.stats = {"hp":10, "atk":1, "def":15 };
@@ -54,10 +59,13 @@ Function.prototype.method = function (name, func) {
 function showstats(){
 	//debug.write("onselect");
 	var stats = 'HP:' + this.stats.hp + ' ATK:' + this.stats.atk + ' DEF:' + this.stats.def;
-	var menu = '<a href="#" onClick="'+this.id+'.moveAction();" >move</a>|<a href="#" onClick="'+this.id+'.attackAction();">attack</a> ';
+	var menu = '<a href="#" onClick="'+this.id+
+		'.moveAction();" ><div class="button">move</div></a><a href="#" onClick="'+this.id+
+		'.attackAction();"><div class="button">attack</div></a> ';
 	//debug.write(stats);
 
-	document.getElementById('menu').innerHTML = menu+stats; 
+	document.getElementById('menu').innerHTML = menu;
+	document.getElementById('stats').innerHTML=stats; 
 }
 
 function moveAction(){

@@ -50,6 +50,22 @@ function animationloop(actor){
 	playing = setTimeout("animationloop(actor)", actor.animation[anim].delay);
 }
 
+function view_animation(frames, count){
+	out="";
+for (i=0;i<count;i++){
+		out+='<img src="'+frames[i]+'" />';
+	}
+	
+	foo = new moveable("frames", out, 0, 32);
+	
+	foo2 = new moveable("animview", '', 0, 64);
+	foo2.animation = [];
+	foo2.animation["default"]=new animation(foo2.id, frames, 200);
+	actor = foo2;
+	anim="default";
+	
+}
+
 function animate_move(){
 	step = 16;
 	if (dx==null) { 
@@ -71,8 +87,8 @@ function animate_move(){
 	if (Math.abs(actor.x-tx)<step && Math.abs(actor.y-ty)<step) {
 		moving=false;
 		anim="idle";
-		actor.x=tx;
-		actor.y=ty;
+		tx=actor.x;
+		ty=actor.y;
 		moveTo(actor.id, tx, ty);
 		dx=null; dy=null;
 	}
