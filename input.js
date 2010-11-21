@@ -12,7 +12,7 @@ var mouse="";
 
 
 function select(){
-	selected = this.id;
+	selected = this;
 	this.onselect();
 	return this.id;
 }
@@ -33,7 +33,7 @@ function keydown(e){
     }*/
     //document.writeln("DEBUG keyup<br>");
     var code;
-	var speed=10;
+	var speed=32;
     //if (!e) {var e = window.event;}
     if (e.keyCode) {code = e.keyCode;}
     else if (e.which) {code = e.which;}

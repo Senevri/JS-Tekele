@@ -25,7 +25,7 @@ war1.testWar = testWar;
 war1.testWar();
 
 function testWar(){
-//this = new moveable(name, '<div style="width:32px; height:32px;"><img src="warrior.png"/></div>', 200, 300);
+//this = new moveable(name, '<div style="width:64px; height:64px;"><img src="warrior.png"/></div>', 200, 300);
 
 this.clickable = clickable;
 //var params = 'selected=' + this.id + '.select()';
@@ -44,13 +44,6 @@ this.moveAction = moveAction;
 this.attackAction = attackAction;
 
 playing = setTimeout('animationloop(actor)', 200);
-}
-var actor;
-var anim;
-
-function animationloop(actor){
-	actor.animation[anim].play();
-	playing = setTimeout("animationloop(actor)", actor.animation[anim].delay);
 }
 
 Function.prototype.method = function (name, func) {
@@ -93,17 +86,12 @@ function attackTargetedObject(id){
 	document.getElementById('main').setAttribute('onClick', 'clearTimeout(playing)');
 }
 function moveToAndDisable(id){ 
-	//debug.write("moveto:"+xpos+" "+ypos );
 	xpos = mouse.clientX-16;
 	ypos = mouse.clientY-16;
-
-	e = document.getElementById(id);
-	e.x = xpos;
-	e.y = ypos;
-	e.style.left=e.x+'px';
-	e.style.top=e.y+'px';
+	moving=true;
+	tx=xpos;
+	ty=ypos;
 	document.getElementById('main').setAttribute('onClick', '');
-	anim="idle";
 }
 
 function testgraphics(){
