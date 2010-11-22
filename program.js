@@ -12,31 +12,35 @@ testgraphics();
 
 //document.getElementById('main').setAttribute('onClick', 'moveTo(selected, event.clientX-16, event.clientY-16)');
 
-button = new moveable("button", "show all", 500, 10);
+button = new moveable("button", "show all", 250, 10);
 button.clickable = clickable;
 button.clickable('showId("bar")');
 
-button2 = new moveable("button2", "mrt", 500, 30);
+button2 = new moveable("button2", "mrt", 250, 30);
 button2.clickable = clickable;
 button2.clickable('button2.select()');
 //war1 = new testWar("war1");
-war1 = new moveable("war1", '', 200, 300);
-war1.testWar = testWar;
-war1.testWar();
+//war1 = new moveable("war1", '', 200, 100);
+//war1.testWar = testWar;
+//war1.testWar();
+war1 = generateWar();
 
-function testWar(){
+function generateWar(){
+	
+	this = new moveable("war1", '', 200, 100);
 	this.clickable = clickable;
 	this.clickable('selected='+this.id+'.select()');
-	this.animation = []
-		this.animation["walk"] = new animation(this.id, ["warrior.png", "warrior2.png"])
-		this.animation["idle"] = new animation(this.id, ["warrior.png"])
-		this.onselect=showstats;
+	this.animation = [];
+	this.animation["walk"] = new animation(this.id, ["this.png", "this2.png"]);
+	this.animation["idle"] = new animation(this.id, ["this.png"]);
+	this.onselect=showstats;
 	this.stats = {"hp":10, "atk":1, "def":15 };
 	actor = this;
 	anim = "idle";
 	this.moveAction = moveAction;
 	this.attackAction = attackAction;
 	playing = setTimeout('animationloop(actor)', 200);
+	return this;
 }
 var actor;
 var anim;
@@ -85,8 +89,8 @@ function enableMainAction(){
 }
 
 function attackTargetedObject(id){
-	//debug.write(selected);
-	document.getElementById('main').setAttribute('onClick', 'changeAnimation()');
+	debug.write(id);
+//	document.getElementById('main').setAttribute('onClick', 'changeAnimation()');
 }
 function moveToAndDisable(id){ 
 	//debug.write("moveto:"+xpos+" "+ypos );
@@ -106,12 +110,12 @@ function testgraphics(){
 	
 	helou = new moveable("helou", "hellowrld2", 200, 200);
 	hobgoblin = '<img src="hobgoblin.png"/>';
-	hob1 = new moveable("hob1", hobgoblin, 300, 300);
+	hob1 = new moveable("hob1", hobgoblin, 300, 100);
 	hob1.onselect = showstats;
 	hob1.stats = {"hp":22, "atk":4, "def":17 };
 	hob1.moveAction=moveAction;
-	hob2 = new moveable("hob2", hobgoblin, 300, 332);
-	hob3 = new moveable("hob3", hobgoblin, 332, 300);
+	hob2 = new moveable("hob2", hobgoblin, 300, 132);
+	hob3 = new moveable("hob3", hobgoblin, 332, 100);
 	hob1.clickable=clickable;
 	hob1.clickable('selected = hob1.select()');
 	hob2.clickable=clickable;
