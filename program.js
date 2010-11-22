@@ -6,19 +6,21 @@ initMouse();
 action = null;
 debug = new debug();
 debug.write("debug:");
-testfoo();
 
-testgraphics();
+//testfoo();
+
+//testgraphics();
 
 //document.getElementById('main').setAttribute('onClick', 'moveTo(selected, event.clientX-16, event.clientY-16)');
 
-button = new moveable("button", "show all", 250, 10);
+/*button = new moveable("button", "show all", 500, 10);
 button.clickable = clickable;
 button.clickable('showId("bar")');
 
 button2 = new moveable("button2", "mrt", 250, 30);
 button2.clickable = clickable;
 button2.clickable('button2.select()');
+*/
 //war1 = new testWar("war1");
 //war1 = new moveable("war1", '', 200, 100);
 //war1.testWar = testWar;
@@ -42,16 +44,10 @@ function generateWar(){
 	playing = setTimeout('animationloop(actor)', 200);
 	return this;
 }
-var actor;
-var anim;
 
-function animationloop(actor){
-	actor.animation[anim].play();
-	playing = setTimeout("animationloop(actor)", 200);
-}
-function changeAnimation(){
+view_animation(["warrior.png", "warrior3.png"], 2);
+test_widgets();
 
-}
 
 Function.prototype.method = function (name, func) {
 	this.prototype[name] = func;
@@ -61,10 +57,13 @@ Function.prototype.method = function (name, func) {
 function showstats(){
 	//debug.write("onselect");
 	var stats = 'HP:' + this.stats.hp + ' ATK:' + this.stats.atk + ' DEF:' + this.stats.def;
-	var menu = '<a href="#" onClick="'+this.id+'.moveAction();" >move</a>|<a href="#" onClick="'+this.id+'.attackAction();">attack</a> ';
+	var menu = '<a href="#" onClick="'+this.id+
+		'.moveAction();" ><div class="button">move</div></a><a href="#" onClick="'+this.id+
+		'.attackAction();"><div class="button">attack</div></a> ';
 	//debug.write(stats);
 
-	document.getElementById('menu').innerHTML = menu+stats; 
+	document.getElementById('menu').innerHTML = menu;
+	document.getElementById('stats').innerHTML=stats; 
 }
 
 function moveAction(){
@@ -93,15 +92,11 @@ function attackTargetedObject(id){
 //	document.getElementById('main').setAttribute('onClick', 'changeAnimation()');
 }
 function moveToAndDisable(id){ 
-	//debug.write("moveto:"+xpos+" "+ypos );
 	xpos = mouse.clientX-16;
 	ypos = mouse.clientY-16;
-
-	e = document.getElementById(id);
-	e.x = xpos;
-	e.y = ypos;
-	e.style.left=e.x+'px';
-	e.style.top=e.y+'px';
+	moving=true;
+	tx=xpos;
+	ty=ypos;
 	document.getElementById('main').setAttribute('onClick', '');
 	anim="idle"
 }

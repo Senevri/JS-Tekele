@@ -50,7 +50,7 @@ function moveable(id, content, x, y){
 };
 
 function move(id, xshift, yshift){ // well, this is a game logic thing anyhow.
-	debug.write("move");
+	//debug.write("move");
 	e = document.getElementById(id);
 	x = e.style.left;
 	y = e.style.top;
