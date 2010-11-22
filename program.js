@@ -34,8 +34,9 @@ function generateWar(){
 	this.clickable = clickable;
 	this.clickable('selected='+this.id+'.select()');
 	this.animation = [];
-	this.animation["walk"] = new animation(this.id, ["warrior.png", "warrior2.png"], 200);
-	this.animation["idle"] = new animation(this.id, ["warrior2.png", "warrior3.png"], 800);
+	this.animation["walk"] = new animation(this.id, ["warrior0000.png", "warrior0001.png"], 200);
+	this.animation["idle"] = new animation(this.id, ["warrior0001.png", "warrior0002.png"], 800);
+	this.animation["attack"] = new animation(this.id, ["warrior0001.png", "warrior0003.png"], 800);
 	this.onselect=showstats;
 	this.stats = {"hp":10, "atk":1, "def":15 };
 	actor = this;
@@ -46,7 +47,7 @@ function generateWar(){
 	return this;
 }
 
-//view_animation(["warrior.png", "warrior3.png"], 2);
+view_animation(["warrior.png", "warrior3.png"], 2);
 //test_widgets();
 
 

@@ -12,8 +12,8 @@ function widget(id){
 	}
 	this.text = function(){
 		var stuff;
-		out="";
-		for(i=0;i<this.content.length;i++){
+		var out="";
+		for(var i=0;i!=this.content.length;i++){
 			stuff=this.content[i];
 			if ('string'==typeof stuff)
 				out+=stuff;
@@ -26,13 +26,15 @@ function widget(id){
 }
 
 function drawWidgetsTo(id){
-	//debug.write(widgets.length);
-	for(i=0;i!=widgets.length;i++){
-		w=widgets[i];
-		//if ('object' == typeof w ) {
-			document.getElementById(id).innerHTML=document.getElementById(id).innerHTML + w.text();
-		//}
-	}
+	var out="";
+	var i=0;
+	while(i<widgets.length){
+		if ('undefined' != typeof widgets[i] ) {		
+			out += widgets[i].text();
+		}		
+		i++;
+	}		
+	document.getElementById(id).innerHTML+=out;
 }
 
 function test_widgets(){
