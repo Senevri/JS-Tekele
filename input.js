@@ -4,7 +4,7 @@
 
 //
 
-selected = "hob2";
+selected = "war1";
 command = "default";
 game_running=true;
 var IE = document.all?true:false;	

@@ -1,0 +1,42 @@
+A:link {text-decoration: none; color: black;}
+A:visited {text-decoration: none;}
+A:active {text-decoration: none;}
+A:hover {text-decoration: none; color: red;}
+
+#main {
+	background-color:#e0e0e0; 
+	width:640px; 
+	height:360px;	
+}
+
+#menu {
+	position:relative;	
+	
+	
+	padding: 3px;
+	float: left;
+	margin: 10px; border-color: black;  border: 3px;
+	margin-top: 256px;
+	border-style:solid;
+	width: 12%;	
+}
+#stats {
+	position:relative;	
+	
+	
+	padding: 3px;
+	float: left;
+	margin: 10px; border-color: black;  border: 3px;
+	margin-top: 256px;
+	border-style:solid;
+	width: 12%;	
+}
+
+
+div.button {
+	margin: 5px; border-color: white;  
+	padding: 2px;
+	border: white 3px;
+	border-style:solid;
+	text-align: center;
+	};

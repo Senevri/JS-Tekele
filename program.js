@@ -1,4 +1,3 @@
-//document.writeln('hellowrld');
 //document.write('<div id="debug" ></div>');
 initKeys();
 initMouse();
@@ -8,7 +7,6 @@ debug = new debug();
 debug.write("debug:");
 
 //testfoo();
-
 //testgraphics();
 
 //document.getElementById('main').setAttribute('onClick', 'moveTo(selected, event.clientX-16, event.clientY-16)');
@@ -22,19 +20,22 @@ button2.clickable = clickable;
 button2.clickable('button2.select()');
 */
 //war1 = new testWar("war1");
-//war1 = new moveable("war1", '', 200, 100);
+//war1 = new moveable("war1", '', 100, 100);
 //war1.testWar = testWar;
 //war1.testWar();
-war1 = generateWar();
+
+war1 = new generateWar();
 
 function generateWar(){
 	
-	this = new moveable("war1", '', 200, 100);
+	this.inheritfrom = moveable
+	this.inheritfrom("war1", '', 200, 100);
+	//this = moveable("war1", '', 200, 100);
 	this.clickable = clickable;
 	this.clickable('selected='+this.id+'.select()');
 	this.animation = [];
-	this.animation["walk"] = new animation(this.id, ["this.png", "this2.png"]);
-	this.animation["idle"] = new animation(this.id, ["this.png"]);
+	this.animation["walk"] = new animation(this.id, ["warrior.png", "warrior2.png"], 200);
+	this.animation["idle"] = new animation(this.id, ["warrior2.png", "warrior3.png"], 800);
 	this.onselect=showstats;
 	this.stats = {"hp":10, "atk":1, "def":15 };
 	actor = this;
@@ -45,8 +46,8 @@ function generateWar(){
 	return this;
 }
 
-view_animation(["warrior.png", "warrior3.png"], 2);
-test_widgets();
+//view_animation(["warrior.png", "warrior3.png"], 2);
+//test_widgets();
 
 
 Function.prototype.method = function (name, func) {
@@ -56,14 +57,29 @@ Function.prototype.method = function (name, func) {
 
 function showstats(){
 	//debug.write("onselect");
-	var stats = 'HP:' + this.stats.hp + ' ATK:' + this.stats.atk + ' DEF:' + this.stats.def;
+	//var stattext = 'HP:' + this.stats.hp + ' ATK:' + this.stats.atk + ' DEF:' + this.stats.def;
+	var ostats = new widget('stats');
+	//stats.add(stattext);
+	genstat = function(name, value){	
+		ostats.add(name.toUpperCase()+':');
+		//ostats.add("fooo");
+		//this = new widget(name);		
+		//this.add(value.toString());
+		//ostats.add(this);
+		ostats.add(value.toString()+'<br />');
+		//ostats.add();			
+	}
+	genstat('hp', this.stats.hp);
+	genstat('atk', this.stats.atk);
+	genstat('def', this.stats.def);
+	
 	var menu = '<a href="#" onClick="'+this.id+
 		'.moveAction();" ><div class="button">move</div></a><a href="#" onClick="'+this.id+
 		'.attackAction();"><div class="button">attack</div></a> ';
 	//debug.write(stats);
 
 	document.getElementById('menu').innerHTML = menu;
-	document.getElementById('stats').innerHTML=stats; 
+	document.getElementById('stats').innerHTML=ostats.text(); 
 }
 
 function moveAction(){
@@ -98,7 +114,7 @@ function moveToAndDisable(id){
 	tx=xpos;
 	ty=ypos;
 	document.getElementById('main').setAttribute('onClick', '');
-	anim="idle"
+	//anim="idle"
 }
 
 function testgraphics(){
