@@ -24,7 +24,7 @@ button2.clickable('button2.select()');
 //war1.testWar = testWar;
 //war1.testWar();
 
-war1 = new generateWar();
+//war1 = new generateWar();
 
 function generateWar(){
 	
@@ -47,7 +47,7 @@ function generateWar(){
 }
 
 //view_animation(["warrior.png", "warrior3.png"], 2);
-//test_widgets();
+test_widgets();
 
 
 Function.prototype.method = function (name, func) {
