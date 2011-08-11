@@ -10,6 +10,13 @@ function widget(id){
 		this.content.push(stuff);
 		this.size++;
 	}
+	
+	this.wrap = function(tag, params, stuff){
+		this.add('<'+tag+' '+params+'>');
+		this.add(stuff);
+		this.add('</'+tag+'>');
+	}
+	
 	this.text = function(){
 		var stuff;
 		var out="";
