@@ -1,10 +1,10 @@
 container_id="main";
-widgets = [];
+widgets = new widget('widgets');
 
 function widget(id){
 	//var this=Object;
 	this.id=id;
-	this.content=[]
+	this.content=[];
 	this.size=0;
 	this.add = function(stuff){
 		this.content.push(stuff);
@@ -15,8 +15,7 @@ function widget(id){
 		this.add('<'+tag+' '+params+'>');
 		this.add(stuff);
 		this.add('</'+tag+'>');
-	}
-	
+	};
 	this.text = function(){
 		var stuff;
 		var out="";
@@ -28,20 +27,13 @@ function widget(id){
 				out+=stuff.text();
 		}
 		return out;
-	}
+	};
 	return this;
 }
 
 function drawWidgetsTo(id){
-	var out="";
-	var i=0;
-	while(i<widgets.length){
-		if ('undefined' != typeof widgets[i] ) {		
-			out += widgets[i].text();
-		}		
-		i++;
-	}		
-	document.getElementById(id).innerHTML+=out;
+   document.getElementById(id).innerHTML = document.getElementById(id).innerHTML + widgets.text();
+	
 }
 
 function test_widgets(){
@@ -58,8 +50,10 @@ function test_widgets(){
 	w2.add("in bar");
 	w2.add("</h1>");
 	w.add(w2);
-	w.add("</div>")
-	widgets.push(w0);
-	widgets.push(w);
+	w.add("</div>");
+    //widgets.push(function() { var x = "function" ;});
+    widgets.add("stuff<br>");
+	widgets.add(w0);
+	widgets.add(w);
 	drawWidgetsTo("main");
 }
