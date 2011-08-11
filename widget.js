@@ -1,15 +1,15 @@
 container_id="main";
-widgets = [];
+widgets = new widget('widgets');
 
 function widget(id){
 	//var this=Object;
 	this.id=id;
-	this.content=[]
+	this.content=[];
 	this.size=0;
 	this.add = function(stuff){
 		this.content.push(stuff);
 		this.size++;
-	}
+	};
 	this.text = function(){
 		var stuff;
 		out="";
@@ -21,18 +21,13 @@ function widget(id){
 				out+=stuff.text();
 		}
 		return out;
-	}
+	};
 	return this;
 }
 
 function drawWidgetsTo(id){
-	//debug.write(widgets.length);
-	for(i=0;i!=widgets.length;i++){
-		w=widgets[i];
-		//if ('object' == typeof w ) {
-			document.getElementById(id).innerHTML=document.getElementById(id).innerHTML + w.text();
-		//}
-	}
+   document.getElementById(id).innerHTML = document.getElementById(id).innerHTML + widgets.text();
+	
 }
 
 function test_widgets(){
@@ -49,8 +44,10 @@ function test_widgets(){
 	w2.add("in bar");
 	w2.add("</h1>");
 	w.add(w2);
-	w.add("</div>")
-	widgets.push(w0);
-	widgets.push(w);
+	w.add("</div>");
+    //widgets.push(function() { var x = "function" ;});
+    widgets.add("stuff<br>");
+	widgets.add(w0);
+	widgets.add(w);
 	drawWidgetsTo("main");
 }
