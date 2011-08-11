@@ -43,10 +43,13 @@ function moveable(id, content, x, y){
 //	this.clickable="";
 	this.header = '<div id="'+id+'"class="moveable" '+ this.clickable +' style="position:absolute;left:' + x + 'px;top:'+ y + 'px;">'; 
 	this.footer = "</div>";
-	function update(header, content, footer){	
+	this.update = function (header, content, footer){	
 		document.write(header, content, footer);
 	}
-	update(this.header, this.content, this.footer);
+	this.get = function (){
+		return this.header + this.content + this.footer;
+	}
+	this.update(this.header, this.content, this.footer);
 };
 
 function move(id, xshift, yshift){ // well, this is a game logic thing anyhow.
@@ -59,6 +62,8 @@ function move(id, xshift, yshift){ // well, this is a game logic thing anyhow.
 	e.style.left=((1*x)+xshift)+'px';
 	e.style.top=((1*y)+yshift)+'px';
 }
-
-
+function makemoveable(id){
+	e = document.getElementById(id);
+	e.style.position='absolute';	
+}
 

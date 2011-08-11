@@ -19,12 +19,8 @@ button2 = new moveable("button2", "mrt", 250, 30);
 button2.clickable = clickable;
 button2.clickable('button2.select()');
 */
-//war1 = new testWar("war1");
-//war1 = new moveable("war1", '', 100, 100);
-//war1.testWar = testWar;
-//war1.testWar();
 
-//war1 = new generateWar();
+war1 = new generateWar();
 
 function generateWar(){
 	
@@ -37,6 +33,7 @@ function generateWar(){
 	this.animation.attack = new animation(this.id, ["warrior0001.png", "warrior0003.png"], 800);
 	this.animation.walk = new animation(this.id, ["warrior.png", "warrior2.png"], 200);
 	this.animation.idle = new animation(this.id, ["warrior2.png", "warrior3.png"], 800);
+	this.select = select;
 	this.onselect=showstats;
 	this.stats = {"hp":10, "atk":1, "def":15 };
 	actor = this;
@@ -48,6 +45,10 @@ function generateWar(){
 }
 
 view_animation(["warrior.png", "warrior3.png"], 2);
+duud = new widget('duud');
+varjo = new generateWar();
+move(varjo.id, 100,0);
+duud.add(varjo);
 test_widgets();
 
 
@@ -79,9 +80,7 @@ function showstats(){
 		'.attackAction();"><div class="button">attack</div></a> ';
 	//debug.write(stats);
 
-	document.getElementById('menu').innerHTML = menu;
-	document.getElementById('stats').innerHTML=ostats.text(); 
-}
+	document.getElementById('menu').innerHTML = menu; document.getElementById('stats').innerHTML=ostats.text(); }
 
 function moveAction(){
 	//	debug.write("moveaction");

@@ -57,24 +57,28 @@ for (i=0;i<count;i++){
 	}
 	
 	foo = new widget('frames');
-	foo.add("<p>Frames:</p>")
+	foo.wrap("p", 'style="font-family:Courier, Monotype"', "Frames:");
 	foo.add(out);
 	foo2 = new widget('animview');
-	foo2.add("<p>Animation:</p>")	
-	foo2.add('<div id="animview"></div>');
-	
+	foo2.wrap("p",'style="font-family:Courier, Monotype;"',"Animation:");	
+	foo2.add('<div id="animview"></div>');	
 	foo3 = new widget('container');
+	foo3.add('<div style="position:absolute; float:left; left:0px; margin: 10px;">');
 	foo3.add(foo);
 	foo3.add(foo2);
-	widgets.push(foo3);
+	foo3.add('</div>');
+	widgets.add(foo3);
 	
-	//document.write(foo3.text());
-	//document.write(foo2.text());
 	drawWidgetsTo('main');
 	foo2.animation = [];
 	foo2.animation["default"]=new animation(foo2.id, frames, 200);
 	actor = foo2;
 	anim="default";
+	//foo2.animation['default'].play();
+	animationloop(foo2);
+	//makemoveable('animview');
+	//move('animview', 100, 100);
+	//moveTo('animview', 0, 0);
 }
 
 function animate_move(){
