@@ -56,14 +56,25 @@ for (i=0;i<count;i++){
 		out+='<img src="'+frames[i]+'" />';
 	}
 	
-	foo = new moveable("frames", out, 0, 32);
+	foo = new widget('frames');
+	foo.add("<p>Frames:</p>")
+	foo.add(out);
+	foo2 = new widget('animview');
+	foo2.add("<p>Animation:</p>")	
+	foo2.add('<div id="animview"></div>');
 	
-	foo2 = new moveable("animview", '', 0, 64);
+	foo3 = new widget('container');
+	foo3.add(foo);
+	foo3.add(foo2);
+	widgets.push(foo3);
+	
+	//document.write(foo3.text());
+	//document.write(foo2.text());
+	drawWidgetsTo('main');
 	foo2.animation = [];
 	foo2.animation["default"]=new animation(foo2.id, frames, 200);
 	actor = foo2;
 	anim="default";
-	
 }
 
 function animate_move(){

@@ -28,25 +28,26 @@ button2.clickable('button2.select()');
 
 function generateWar(){
 	
-	this.inheritfrom = moveable
+	this.inheritfrom = moveable;
 	this.inheritfrom("war1", '', 200, 100);
 	//this = moveable("war1", '', 200, 100);
 	this.clickable = clickable;
 	this.clickable('selected='+this.id+'.select()');
 	this.animation = [];
-	this.animation["walk"] = new animation(this.id, ["warrior.png", "warrior2.png"], 200);
-	this.animation["idle"] = new animation(this.id, ["warrior2.png", "warrior3.png"], 800);
+	this.animation.attack = new animation(this.id, ["warrior0001.png", "warrior0003.png"], 800);
+	this.animation.walk = new animation(this.id, ["warrior.png", "warrior2.png"], 200);
+	this.animation.idle = new animation(this.id, ["warrior2.png", "warrior3.png"], 800);
 	this.onselect=showstats;
 	this.stats = {"hp":10, "atk":1, "def":15 };
 	actor = this;
 	anim = "idle";
 	this.moveAction = moveAction;
 	this.attackAction = attackAction;
-	playing = setTimeout('animationloop(actor)', 200);
+	playing = setTimeout(animationloop(actor), 200);
 	return this;
 }
 
-//view_animation(["warrior.png", "warrior3.png"], 2);
+view_animation(["warrior.png", "warrior3.png"], 2);
 test_widgets();
 
 
@@ -68,7 +69,7 @@ function showstats(){
 		//ostats.add(this);
 		ostats.add(value.toString()+'<br />');
 		//ostats.add();			
-	}
+	};
 	genstat('hp', this.stats.hp);
 	genstat('atk', this.stats.atk);
 	genstat('def', this.stats.def);
@@ -85,7 +86,7 @@ function showstats(){
 function moveAction(){
 	//	debug.write("moveaction");
 	action = "moveToAndDisable(selected)";
-	anim="walk"
+	anim="walk";
 	document.onmousemove = enableMainAction;
 	//	enableMainAction();
 }
