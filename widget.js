@@ -12,13 +12,15 @@ function widget(id){
 	}
 	this.text = function(){
 		var stuff;
-		out="";
-		for(i=0;i<this.content.length;i++){
-			stuff=this.content[i];
-			if ('string'==typeof stuff)
-				out+=stuff;
-			if('object'==typeof stuff)
-				out+=stuff.text();
+		var out="";
+		if(this.size>0) {
+			for(i=0;i<this.content.length;i++){
+				stuff=this.content[i];
+				if ('string'==typeof stuff)
+					out+=stuff;
+				if('object'==typeof stuff)
+					out+=stuff.text();
+			}
 		}
 		return out;
 	}
@@ -27,10 +29,10 @@ function widget(id){
 
 function drawWidgetsTo(id){
 	//debug.write(widgets.length);
-	for(i=0;i!=widgets.length;i++){
+	for(i=0;i<widgets.length;i++){
 		w=widgets[i];
 		//if ('object' == typeof w ) {
-			document.getElementById(id).innerHTML=document.getElementById(id).innerHTML + w.text();
+			document.getElementById(id).innerHTML = document.getElementById(id).innerHTML + w.text();
 		//}
 	}
 }
