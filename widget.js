@@ -19,12 +19,14 @@ function widget(id){
 	this.text = function(){
 		var stuff;
 		var out="";
-		for(var i=0;i!=this.content.length;i++){
-			stuff=this.content[i];
-			if ('string'==typeof stuff)
-				out+=stuff;
-			if('object'==typeof stuff)
-				out+=stuff.text();
+		if(this.size>0) {
+			for(i=0;i<this.content.length;i++){
+				stuff=this.content[i];
+				if ('string'==typeof stuff)
+					out+=stuff;
+				if('object'==typeof stuff)
+					out+=stuff.text();
+			}
 		}
 		return out;
 	};
