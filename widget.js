@@ -22,7 +22,7 @@ function Widget(id) {
 		if (this.size > 0) {
 			for (i = 0; i < this.content.length; i = i + 1) {
 				stuff = this.content[i];
-				debug.write(stuff);
+				//debug.write(stuff);
 				if ('string' === typeof stuff) {
 					out += stuff;
 				} else if ('object' === typeof stuff) {

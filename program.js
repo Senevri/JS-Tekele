@@ -50,9 +50,9 @@ function generateWar(id){
 	this.clickable = clickable;
 	this.clickable('selected='+this.id+'.select()');
 	this.animation = [];
-	this.animation.attack = new animation(this.id, ["warrior0001.png", "warrior0003.png"], 800);
-	this.animation.walk = new animation(this.id, ["warrior.png", "warrior2.png"], 200);
-	this.animation.idle = new animation(this.id, ["warrior2.png", "warrior3.png"], 800);
+	this.animation.attack = new Animation(this.id, ["warrior0001.png", "warrior0003.png"], 800);
+	this.animation.walk = new Animation(this.id, ["warrior.png", "warrior2.png"], 200);
+	this.animation.idle = new Animation(this.id, ["warrior2.png", "warrior3.png"], 800);
 	this.select = select;
 	this.onselect=showstats;
 	this.stats = {"hp":10, "atk":1, "def":15 };
