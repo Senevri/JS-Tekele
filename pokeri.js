@@ -1,10 +1,10 @@
 //pokeri.js
-
-widgets.push(new widget('init'));
-foo = new widget('foo');
+var widgets = new Widget('widget');
+widgets.add(new Widget('init'));
+foo = new Widget('foo');
 foo.add("<p>hello world too</p>");
 foo.add("<p><moar stuff here!/p>");
 foo.text();
-widgets.push(foo);
-drawWidgetsTo('main');
+widgets.add(foo);
+widgets.drawTo('main');
 //document.getElementById('main').innerHTML = foo.text();

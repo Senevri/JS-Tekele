@@ -66,7 +66,7 @@ function generateWar(id){
 
 
 view_animation(["warrior.png", "warrior3.png"], 2);
-/*duud = new widget('duud');
+/*duud = new Widget('duud');
 varjo = new generateWar();
 move(varjo.id, 100,0);
 duud.add(varjo);*/
@@ -80,12 +80,12 @@ Function.prototype.method = function (name, func) {
 function showstats(){
 	//debug.write("onselect");
 	//var stattext = 'HP:' + this.stats.hp + ' ATK:' + this.stats.atk + ' DEF:' + this.stats.def;
-	var ostats = new widget('stats');
+	var ostats = new Widget('stats');
 	//stats.add(stattext);
 	genstat = function(name, value){	
 		ostats.add(name.toUpperCase()+':');
 		//ostats.add("fooo");
-		//this = new widget(name);		
+		//this = new Widget(name);		
 		//this.add(value.toString());
 		//ostats.add(this);
 		ostats.add(value.toString()+'<br />');

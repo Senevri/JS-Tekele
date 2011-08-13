@@ -9,9 +9,9 @@ function sleep(ms)
 initKeys();
 initMouse();
 //just because.  not needed really
-widgets.push(new widget('init'));
-foo = new widget('foo');
-kangas = new widget('kangas');
+widgets.push(new Widget('init'));
+foo = new Widget('foo');
+kangas = new Widget('kangas');
 //foo.add("<p>hello world</p>");
 kangas.add("<canvas id='dk' width=600 height=300></canvas>");
 foo.add("<a href='' onclick='step()'>klik</a>")

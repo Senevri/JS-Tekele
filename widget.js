@@ -1,31 +1,32 @@
-
-function widget(id){
+/* widget constructor */
+function Widget(id) {
 	//var this=Object;
-	this.id=id;
-	this.content=[];
-	this.size=0;
-	this.add = function(stuff){
+	this.id = id;
+	this.content = [];
+	this.size = 0;
+	this.add = function (stuff) {
 		this.content.push(stuff);
-		this.size++;
-	}
-	
-	this.wrap = function(tag, params, stuff){
-		this.add('<'+tag+' '+params+'>');
-		this.add(stuff);
-		this.add('</'+tag+'>');
+		this.size = this.size + 1;
 	};
-	this.text = function(){
-		var stuff=0;
+	
+	this.wrap = function (tag, params, stuff) {
+		this.add('<' + tag + ' ' + params + '>');
+		this.add(stuff);
+		this.add('</' + tag + '>');
+	};
+	this.text = function () {
+		var stuff, out, i;
+		stuff = 0;
 		//var out=undefined;
-		var out="";
-		if(this.size>0) {
-			for(i=0;i<this.content.length;i++){
-				stuff=this.content[i];
+		out = null;
+		if (this.size > 0) {
+			for (i = 0; i < this.content.length; i = i + 1) {
+				stuff = this.content[i];
 				debug.write(stuff);
-				if ('string'===typeof stuff) {
-					out+=stuff;
-				} else if('object'===typeof stuff) {
-					out+=stuff.text();
+				if ('string' === typeof stuff) {
+					out += stuff;
+				} else if ('object' === typeof stuff) {
+					out += stuff.text();
 				}
 			}
 		}
@@ -33,24 +34,24 @@ function widget(id){
 			
 		
 	};
-	this.drawTo = function(id){
-   		document.getElementById(id).innerHTML = document.getElementById(id).innerHTML + this.text();
-	}
+	this.drawTo = function (id) {
+		document.getElementById(id).innerHTML = document.getElementById(id).innerHTML + this.text();
+	};
 	return this;
 }
 
 
-function test_widgets(){
-
-	widgets = new widget('widgets');
-	w0  = new widget('surprise');
+function test_widgets() {
+	var widgets, w0, w, w2;
+	widgets = new Widget('widgets');
+	w0  = new Widget('surprise');
 	w0.add("surprise!");
-	w = new widget("foo");
+	w = new Widget("foo");
 	
 	w.add('<div style="float: right;">');
 	w.add("hello, world");
 	w.add("<br />");
-	w2 = new widget("bar");
+	w2 = new Widget("bar");
 	w2.add("<h1>");
 	w2.add("in bar");
 	w2.add("</h1>");
