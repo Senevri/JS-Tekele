@@ -1,5 +1,3 @@
-container_id="main";
-widgets = new widget('widgets');
 
 function widget(id){
 	//var this=Object;
@@ -17,29 +15,34 @@ function widget(id){
 		this.add('</'+tag+'>');
 	};
 	this.text = function(){
-		var stuff;
+		var stuff=0;
+		//var out=undefined;
 		var out="";
 		if(this.size>0) {
 			for(i=0;i<this.content.length;i++){
 				stuff=this.content[i];
-				if ('string'==typeof stuff)
+				debug.write(stuff);
+				if ('string'===typeof stuff) {
 					out+=stuff;
-				if('object'==typeof stuff)
+				} else if('object'===typeof stuff) {
 					out+=stuff.text();
+				}
 			}
 		}
-		return out;
+		return out; 
+			
+		
 	};
+	this.drawTo = function(id){
+   		document.getElementById(id).innerHTML = document.getElementById(id).innerHTML + this.text();
+	}
 	return this;
 }
 
-function drawWidgetsTo(id){
-   document.getElementById(id).innerHTML = document.getElementById(id).innerHTML + widgets.text();
-	
-}
 
 function test_widgets(){
 
+	widgets = new widget('widgets');
 	w0  = new widget('surprise');
 	w0.add("surprise!");
 	w = new widget("foo");
@@ -57,5 +60,5 @@ function test_widgets(){
     widgets.add("stuff<br>");
 	widgets.add(w0);
 	widgets.add(w);
-	drawWidgetsTo("main");
+	widgets.drawTo("main");
 }

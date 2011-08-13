@@ -1,9 +1,9 @@
-var actor;
-var anim;
-var tick=false;
-var moving=false;
-var tx; 
-var ty;
+//var actor;
+//var anim;
+//var tick=false;
+//var moving=false;
+//var tx; 
+//var ty;
 
 
 function is_array(input){
@@ -12,10 +12,10 @@ function is_array(input){
 function animation_init(){
 	this.animation = [];
 }
-function animation(id, animation, delay){
+function animation(id, fr, delay){
 	this.id = id;
-	this.frames;
-	this.frames = animation;	
+	//this.frames;
+	this.frames = fr;	
 	this.delay = delay;
 	this.curframe = 0;
 	this.maxframe = this.frames.length-1;
@@ -30,24 +30,30 @@ function animation(id, animation, delay){
 			a.curframe=0;
 		}
 		this.content='<img src="'+a.frames[a.curframe]+'" style="width:32px; height:32px;"/>';
-		this.refresh();
+		this.refresh();	
 	};
 };
 
 	dx=null;
 	dy=null;
 
-function animationloop(actor){
+function animationloop(){
+	var container;
+	var anim;
 	//dx=0;
 	//dy=0;
-	if (tick==false) tick=true;
-	else tick=false;
+	//if (tick==false) tick=true;
+	//else tick=false;
 	
-	if (moving && tick){
-		animate_move();
+	//if (actor.moving && tick){
+	//	animate_move();
+	//}
+	//clearTimeout(container.playing);
+	this.advance=function(){
+		container.animation[anim].play();
+		setTimeout(animationloop.advance(), container.animation[anim].delay);
 	}
-	actor.animation[anim].play();
-	playing = setTimeout("animationloop(actor)", actor.animation[anim].delay);
+	//container.playing = setInterval(container.animation[anim].play(), container.animation[anim].delay);
 }
 
 function view_animation(frames, count){
@@ -64,25 +70,25 @@ for (i=0;i<count;i++){
 	foo2.add('<div id="animview"></div>');	
 	foo3 = new widget('container');
 	foo3.add('<div style="position:absolute; float:left; left:0px; margin: 10px;">');
-	foo3.add(foo);
+//	foo3.add(foo);
 	foo3.add(foo2);
 	foo3.add('</div>');
-	widgets.add(foo3);
 	
-	drawWidgetsTo('main');
+	foo3.drawTo('main');
 	foo2.animation = [];
 	foo2.animation["default"]=new animation(foo2.id, frames, 200);
-	actor = foo2;
-	anim="default";
-	//foo2.animation['default'].play();
-	animationloop(foo2);
+	//foo2.animation['default'].run();
+	foo2.run = animationloop();
+	foo2.run.container=foo2;
+	foo2.run.anim="default";
+	//foo2.animation.animview.play();
 	//makemoveable('animview');
 	//move('animview', 100, 100);
 	//moveTo('animview', 0, 0);
 }
 
 function animate_move(){
-	step = 16;
+	step = 32;
 	if (dx==null) { 
 		dx = (tx-actor.x);
 		//debug.write(dx);
@@ -100,7 +106,7 @@ function animate_move(){
 		actor.y=actor.y+step*(dy/Math.abs(dy));
 	}
 	if (Math.abs(actor.x-tx)<step && Math.abs(actor.y-ty)<step) {
-		moving=false;
+		this.moving=false;
 		anim="idle";
 		tx=actor.x;
 		ty=actor.y;

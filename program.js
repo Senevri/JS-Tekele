@@ -20,12 +20,32 @@ button2.clickable = clickable;
 button2.clickable('button2.select()');
 */
 
-war1 = new generateWar();
+/*war1 = new generateWar("uno");
+war2 = new generateWar("dos");
+move("dos", 100, 0);
+war1.playing;
+war2.playing;
+*/
 
-function generateWar(){
-	
+/*
+test_one();
+test_two();
+
+function test_one(){
+	debug.write("one-------");
+	setTimeout("test_one()", 1000);
+}
+
+function test_two(){
+	debug.write("two++++++++");
+	setTimeout("test_two()", 500);
+}
+*/
+
+function generateWar(id){
 	this.inheritfrom = moveable;
-	this.inheritfrom("war1", '', 200, 100);
+	this.inheritfrom(id, '', 200, 100);
+	debug.write(this.id);
 	//this = moveable("war1", '', 200, 100);
 	this.clickable = clickable;
 	this.clickable('selected='+this.id+'.select()');
@@ -36,21 +56,21 @@ function generateWar(){
 	this.select = select;
 	this.onselect=showstats;
 	this.stats = {"hp":10, "atk":1, "def":15 };
-	actor = this;
-	anim = "idle";
+	//actor = this;
+	this.anim = "idle";
 	this.moveAction = moveAction;
 	this.attackAction = attackAction;
-	playing = setTimeout(animationloop(actor), 200);
+	this.playing = setTimeout("animationloop("+this.id+")", this.animation['idle'].delay);
 	return this;
 }
 
+
 view_animation(["warrior.png", "warrior3.png"], 2);
-duud = new widget('duud');
+/*duud = new widget('duud');
 varjo = new generateWar();
 move(varjo.id, 100,0);
-duud.add(varjo);
-test_widgets();
-
+duud.add(varjo);*/
+//test_widgets();
 
 Function.prototype.method = function (name, func) {
 	this.prototype[name] = func;
@@ -85,7 +105,7 @@ function showstats(){
 function moveAction(){
 	//	debug.write("moveaction");
 	action = "moveToAndDisable(selected)";
-	anim="walk";
+	actor.anim="walk";
 	document.onmousemove = enableMainAction;
 	//	enableMainAction();
 }
@@ -108,9 +128,9 @@ function attackTargetedObject(id){
 //	document.getElementById('main').setAttribute('onClick', 'changeAnimation()');
 }
 function moveToAndDisable(id){ 
-	xpos = mouse.clientX-16;
-	ypos = mouse.clientY-16;
-	moving=true;
+	xpos = Math.floor(mouse.clientX/16)*16;
+	ypos = Math.floor(mouse.clientY/16)*16;
+	id.animation.moving=true;
 	tx=xpos;
 	ty=ypos;
 	document.getElementById('main').setAttribute('onClick', '');
