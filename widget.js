@@ -16,21 +16,22 @@ function Widget(id) {
 	};
 	this.text = function () {
 		var stuff, out, i;
-		stuff = 0;
+		stuff = null;
 		//var out=undefined;
-		out = null;
+		out = '';
 		if (this.size > 0) {
 			for (i = 0; i < this.content.length; i = i + 1) {
 				stuff = this.content[i];
+				if (stuff === null) { stuff = ""; }
 				//debug.write(stuff);
-				if ('string' === typeof stuff) {
+				if ('string' === typeof stuff && stuff) {
 					out += stuff;
 				} else if ('object' === typeof stuff) {
 					out += stuff.text();
 				}
 			}
 		}
-		return out; 
+		return out!=null ? out : ""; 
 			
 		
 	};
@@ -58,7 +59,7 @@ function test_widgets() {
 	w.add(w2);
 	w.add("</div>");
     //widgets.push(function() { var x = "function" ;});
-    widgets.add("stuff<br>");
+    widgets.wrap("h3", 'style="color:rgb(230,0,0);"', "stuff:<br>");
 	widgets.add(w0);
 	widgets.add(w);
 	widgets.drawTo("main");

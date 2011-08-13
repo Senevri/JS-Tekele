@@ -71,12 +71,12 @@ varjo = new generateWar();
 move(varjo.id, 100,0);
 duud.add(varjo);*/
 //test_widgets();
-
+/*
 Function.prototype.method = function (name, func) {
 	this.prototype[name] = func;
 	return this;
 };
-
+*/
 function showstats(){
 	//debug.write("onselect");
 	//var stattext = 'HP:' + this.stats.hp + ' ATK:' + this.stats.atk + ' DEF:' + this.stats.def;

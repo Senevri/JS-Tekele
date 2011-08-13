@@ -4,7 +4,7 @@
 //var moving=false;
 //var tx; 
 //var ty;
-
+var animation_stack = []
 
 function is_array(input) {
     return typeof (input) === 'object' && (input instanceof Array);
@@ -40,27 +40,31 @@ function Animation(id, fr, delay) {
 var dx = null;
 var dy = null;
 
-function Animation_loop() {
-	var container = null, anim = null;
+function Animation_loop(widget, anim) {
+	var tick, i=0, a;
 	//dx=0;
-	//dy=0;
-	//if (tick==false) tick=true;
-	//else tick=false;
+	while(i<animation_stack.length){
+		container = animation_stack[i];
+		if (container.id == widget) { break; }
+		i++;
+	}
+	a = container.animation;
+	debug.write(container.id);
+	if (tick==false) tick=true;
+	else tick=false;
 	
 	//if (actor.moving && tick){
 	//	animate_move();
 	//}
 	//clearTimeout(container.playing);
 	this.setContainer = function (cnt)  {
-		this.container = cnt;
+		container = cnt;
 		//debug.write(this.container.id);
 	}
-	this.run = function () {
-		//debug.write(this.container.id + ":" + this.anim);
-		this.container.animation[this.anim].play();
-		//this.container.playing = setInterval(this.container.animation[this.anim].play(), container.animation[this.anim].delay);
-		this.container.playing = setTimeout(this.run(), this.container.animation[this.anim].delay);
-	};
+	a[anim].play();
+	clearTimeout(container.playing);
+	(container.playing = setTimeout(('Animation_loop("'+container.id+'", "'+anim+'")'), a[anim].delay));
+	
 }
 
 function view_animation(frames, count) {
@@ -85,11 +89,19 @@ function view_animation(frames, count) {
 	cnt.drawTo('main');
 	animview.animation = [];
 	animview.animation["default"] = new Animation(animview.id, frames, 200);
-	al = new Animation_loop();
-	al.setContainer(animview);
-	al.anim = "default";
-	al.run();
+	animation_stack.push(animview); // any widget with an animation needs to be pushed there.
+	g_anim =animview.animation;
+	//runThatAnim();
+	al=new Animation_loop(animview.id, 'default');
 }
+var g_anim;
+
+function runThatAnim () {
+	g_anim.default.play();
+	setTimeout("runThatAnim()", g_anim.default.delay);
+
+}
+
 
 function animate_move(actor) {
 	var step, dx, dy;
