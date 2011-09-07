@@ -1,0 +1,162 @@
+<html>
+<head>
+
+<style type="text/css">
+body {
+	background-color:BLACK;
+	color:rgb(0,255,0);
+}
+a {
+	color:rgb(0,255,0);
+}
+
+</style>
+<script src="extras/coffee-script.js"></script> 
+<script type="text/coffeescript"> 
+
+</script>
+<script type="text/javascript">
+var storedid = [];
+
+function hideId(id) {
+	document.getElementById(id).style.visibility = 'collapse';
+	storedid[id] = document.getElementById(id).innerHTML;
+	document.getElementById(id).innerHTML = "";    	
+}
+
+function showId(id) {
+	document.getElementById(id).style.visibility = 'visible';
+	if (storedid[id] !== null) { 
+		document.getElementById(id).innerHTML = storedid[id];
+		storedid[id] = null;
+	}
+}
+
+function foo() {
+	/* generate stats */
+	hideId("classchooser");
+	var myclass=undefined;
+	var race = undefined;
+	var stats = {"ADA":"0", "DEX":"0","ESP":"0","INT":"0","LEA":"0","LUC":"0","MAG":"0","ROB":"0","STR":0};
+	for (s in stats){
+		s = Math.random()*6+Math.random()*6+Math.random()*6
+	} //ugly but gets the job done - 3d6. should probably write a 
+	//function for it.
+	this.roll = function(n, d){
+		out=0;
+		for(i=0;i<n;i++){
+			out+=Math.random()*d;	
+		};
+		return out;
+	}
+	/* roll for race */
+	// should maybe use JSON for this.
+	var races = ["Amazon", "Dwarf", "Elf", "Frankenstein",
+		"Hobling","Human","Klengon","Lizard Man", 
+		"Planetary Ape","Robodroid","Vulkin","Wookie"];
+	var classes = ["Warrior", "Warlock", "Criminal", "Pioneer", "Doxy", "Psi Witch"];
+	this.race = Math.floor(this.roll(1,11)); //0-11, 12 entries.
+//	document.write(this.roll(1,11));
+	var abilities = {"Melee Attack":"0",
+	    "Ranged Attack":"0",
+	    "Survival":"0",
+	    "Sneak Attack":"0",
+	    "Magical Attack":"0",
+	    "Psi Resist":"0",
+	    "Saving Throw":"0",
+	    "Restore Courage":"0",
+	    "Conjure":"0",
+	    "Consume Alien Food":"0",
+	    "Ensorcel":"0",
+	    "Experience Bonus":"0",
+	    "Great Feat":"0",
+	    "Interaction":"0",
+	    "Invisibility":"0",
+	    "Lesser Feat":"0",
+	    "Machine Friend":"0",
+	    "Monster Friend":"0",
+	    "Psychic Implant":"0",
+	    "Seduce":"0",
+	    "See the Future":"0",
+	    "Unpleasant Order":"0",
+	    "Illicit":"0", //class specific abilities: Criminal
+	    "Fake":"0",
+	    "Murder":"0",
+	    "Explore":"0", //Pioneer
+	    "Provide":"0",
+	    "Tame":"0",
+	    "Favor":"0",//Doxy
+	    "Seduce":"0",
+	    "Blind":"0", // Psi Witch
+	    "Meld":"0",
+	    "Command Matter":"0",
+	    "Command Energy":"0",
+	    "":"0"}; //done?
+	//start applying stat mods from race/class
+	switch (race) {
+		case 1:
+		break;
+		default:
+	}
+
+	switch (myclass) {}
+
+	//user interface part.
+	this.menu = function (){
+		if(undefined===this.myclass) {
+			showId("classchooser");
+		} else {
+			m = document.getElementById('main');
+			m.innerHTML+=races[this.race] + " "; 
+			m.innerHTML+=classes[this.myclass];
+			m.innerHTML+=this.button("Shop", "app.shop()");
+			m.innerHTML+=this.button("Encounter", "app.encounter()");
+		}
+	}
+	this.setclass = function(cl){
+		this.myclass = cl;
+		hideId("classchooser");
+		this.menu();
+	}
+	this.shop = function (){
+		document.getElementById('main').innerHTML+="<p>shop</p>";	
+	}
+	this.encounter = function (){
+		document.getElementById('main').innerHTML+="<p>encounter</p>";	
+	}
+	this.charsheet = function () {
+		m = document.getElementById("charsheet");
+		m.showId("charsheet");
+		//for()
+	}
+	this.button = function (label, cmd){
+		return "<div class='button'><a href='#' onClick='"+cmd+"'>"+label+"</a><div>";
+	}
+
+}
+function run(){
+	app = new foo();
+	app.menu();	
+}
+
+</script>			
+</head>
+<body onload="run()">
+<script type="text/coffeescript">
+out = document.getElementById 'main'
+test = (x) ->  out.innerHTML += "hello"
+test (1)
+</script>
+	<div id="main">
+		<div id="classchooser">
+			<a href="#" onclick="app.setclass(0)">Warrior</a>
+			<a href="#" onclick="app.setclass(1)">Warlock</a>
+			<a href="#" onclick="app.setclass(2)">Criminal</a>
+			<a href="#" onclick="app.setclass(3)">Pioneer</a>
+			<a href="#" onclick="app.setclass(4)">Doxy</a>
+			<a href="#" onclick="app.setclass(5)">Psi-Witch</a>
+		</div>
+		<div id="charsheet"></div>
+	</div>
+</body>
+</html>

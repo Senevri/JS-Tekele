@@ -1,10 +1,9 @@
 //var actor;
 //var anim;
-//var tick=false;
 //var moving=false;
 //var tx; 
 //var ty;
-var animation_stack = []
+var animation_stack = [];
 
 function is_array(input) {
     return typeof (input) === 'object' && (input instanceof Array);
@@ -17,6 +16,7 @@ function Animation(id, fr, delay) {
 		animation_init();
 	}
 	this.id = id;
+	this.tick = false;
 	//this.frames;
 	this.frames = fr;	
 	this.delay = delay;
@@ -39,23 +39,27 @@ function Animation(id, fr, delay) {
 
 var dx = null;
 var dy = null;
+function fetchContainer(id) {
+	var container, i = 0;
+	while (i<animation_stack.length) {
+		container = animation_stack[i];
+		if (container.id === id) { break; }
+			i++;
+	}
+	return container;
+}
 
 function Animation_loop(widget, anim) {
-	var tick, i=0, a;
+	var tick, i = 0, a, container;
 	//dx=0;
-	while(i<animation_stack.length){
-		container = animation_stack[i];
-		if (container.id == widget) { break; }
-		i++;
-	}
+	container = fetchContainer(widget);
 	a = container.animation;
-	debug.write(container.id);
-	if (tick==false) tick=true;
-	else tick=false;
+	if (a.tick==false) a.tick=true;
+	else a.tick=false;
 	
-	//if (actor.moving && tick){
-	//	animate_move();
-	//}
+	if (container.moving && a.tick){
+		animate_move(container);
+	}
 	//clearTimeout(container.playing);
 	this.setContainer = function (cnt)  {
 		container = cnt;
@@ -104,30 +108,37 @@ function runThatAnim () {
 
 
 function animate_move(actor) {
-	var step, dx, dy;
-	step	= 32;
-	if (dx === null) { 
-		dx = (tx - actor.x);
-		//debug.write(dx);
+
+	var step, dx, dy, tx, ty, cnt;
+	dx = ((actor.gotox/32) - (actor.x/32));		
+	dy = ((actor.gotoy/32) - (actor.y/32));		
+
+	cnt = actor;
+	if (f(a(dx)) > 0) {
+		cnt.xspeed=( a(dx)>a(dy) ? 8*dx/a(dy): 8*dx/a(dx));
 	}
-	if (dy === null) {
-		dy = (ty - actor.y);
-		//debug.write(dy);	
+	if (f(a(dy)) > 0) {
+		cnt.yspeed=(a(dy)>a(dx) ? 8*dy/a(dx) : 8*dy/a(dy));
 	}
-	if (Math.abs(actor.x - tx) > step) {
-		move(actor.id, step * (dx / Math.abs(dx)), 0);
-		actor.x = actor.x + step * (dx / Math.abs(dx));
+	step = 8;
+	tx  = actor.gotox;
+	ty = actor.gotoy;
+	move(actor.id, actor.xspeed, actor.yspeed);
+	if (Math.abs(actor.x - tx) < step) {
+		actor.xspeed=0;
+		//moveTo(actor.id, parseInt(tx), actor.y);
+		
+		}
+	if (Math.abs(actor.y - ty) < step) {
+		actor.yspeed=0;
+		//moveTo(actor.id, actor.x, parseInt(ty));
 	}
-	if (Math.abs(actor.y - ty) > step) {
-		move(actor.id, 0, step * (dy / Math.abs(dy)));			
-		actor.y = actor.y + step * (dy / Math.abs(dy));
-	}
-	if (Math.abs(actor.x - tx) < step && Math.abs(actor.y - ty) < step) {
-		this.moving = false;
+	actor.x = actor.x + actor.xspeed;
+	actor.y = actor.y + actor.yspeed;	
+	if (dy ===0 && dx===dy ) {
+		actor.moving = false;
 		actor.anim = "idle";
-		tx = actor.x;
-		ty = actor.y;
-		moveTo(actor.id, tx, ty);
-		dx = null; dy = null;
+		actor.animate();
+		moveTo(actor.id, parseInt(tx), parseInt(ty));		
 	}
 }
