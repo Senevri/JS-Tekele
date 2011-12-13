@@ -1,32 +1,38 @@
+
+var mouse;
+
+
+function Input() {
 /**
  * copypasta from tetris
  */
 
 //
 
-var selected, command, game_running, IE, mouse;
-selected = "war1";
-command = "default";
+var selected, seme, game_running, IE;
+this.selected = "war1";
+seme = "";
+
 game_running = true;
 IE = document.all ? true : false;	
 mouse = "";
 
 
-function select() {
+this.select = function () {
 	selected = this;
 	this.onselect();
 	return this.id;
 }
 
-/**Mousedown **/
-
-
+this.setCommand = function (cmd) {
+	Input.command = cmd;
+}
 
 /** Keydown
  * reaction to user input here...
  * TODO: messaging
  */ 
-function keydown(e) {
+this.keydown = function (e) {
 	debugClear();
 	debugWrite(selected);
 /*    if(game_running==false){
@@ -59,7 +65,7 @@ function keydown(e) {
  *
  */
 game_running = true;
-function keyup(e) {
+this.keyup = function (e) {
     if (game_running === false) {
 		return;
     }
@@ -80,48 +86,68 @@ function keyup(e) {
 	
     }
 }
-function initKeys() {
+this.initKeys = function () {
 	if (document.addEventListener) { //IE?
-		document.addEventListener("keydown", keydown, false);
+		document.addEventListener("keydown", this.keydown, false);
 		//   document.addEventListener("keypress",keypress,false);
-		document.addEventListener("keyup", keyup, false);
+		document.addEventListener("keyup", this.keyup, false);
 		//   document.addEventListener("textinput",textinput,false);
 	} else if (document.attachEvent) { //Gecko?
-		document.attachEvent("onkeydown", keydown);
+		document.attachEvent("onkeydown", this.keydown);
 		//  document.attachEvent("onkeypress", keypress);
-		document.attachEvent("onkeyup", keyup);
+		document.attachEvent("onkeyup", this.keyup);
 		//  document.attachEvent("ontextinput", textinput);
 	} else {
-		document.onkeydown = keydown;
+		document.onkeydown = this.keydown;
 		// document.onkeypress= keypress;
-		document.onkeyup = keyup;
+		document.onkeyup = this.keyup;
 		// document.ontextinput= textinput;
 	}
 }
 
-function initMouse() {
+this.initMouse = function () {
 	// If NS -- that is, !IE -- then set up for mouse capture
 	if (!IE) { document.captureEvents(Event.MOUSEMOVE); }
 	//
 	// // Set-up to use getMouseXY function onMouseMove
-	document.onmousemove = getMouseXY;
+	document.onmousemove = this.getMouseXY;
+	document.onmousedown = this.getMouseDown;
 
 }
 
-function getMouseXY(ev) {
+this.getMouseXY = function (ev) {
 	mouse = ev;
 	if (IE) { // grab the x-y pos.s if browser is IE
 		mouse.X = event.clientX + document.body.scrollLeft;
-		mouse.Y = event.clientY + document.body.scrollTop;
+		mouse.Y = event.clientY + document.body.scrollTop;		
 	} else {  // grab the x-y pos.s if browser is NS
 		mouse.X = ev.pageX;
 		mouse.Y = ev.pageY;
 
-	}
+	}	
+	
+}
+/**Mousedown **/
+this.getMouseDown = function (ev){
+	mouse = ev;
+	if (ev.which===1 && Input.command != null) {
+		setTimeout(Input.command,0);
+		Input.command=null;
+		debug.write(Input.command);
+	} 
 }
 
-function isdefined(variable) {
+/*function isdefined(variable) {
 	return (typeof (window[variable]) === "undefined") ?  false : true;
+
+}*/
 }
 
+Input.instance = null;
 
+Input.getInstance = function () {
+	if(Input.instance===null) {
+		Input.instance = new Input();
+	}
+	return Input.instance;
+}
