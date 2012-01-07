@@ -13,12 +13,12 @@ debug.write("debug:");
 //testfoo();
 //testgraphics();
 var engineUpdate = function(){
-	var c, i=0, sel = document.getElementById(selected)
+	var c, i=0, sel = document.getElementById(selected);
 	debug.clear();
 	debug.write("selected: " + selected);
 	debug.write("action: " + action);	
 	while (i<creatures.length){
-		c = creatures[i]
+		c = creatures[i];
 		if (c.id != selected) {
 			document.getElementById(c.id).style.backgroundColor='green';
 		}
@@ -266,8 +266,8 @@ function moveToAndDisable(id){
 	cnt.yspeed=0;
 	a=Math.abs;
 	f=Math.floor;
-	xpos = mouse.clientX // presuming 32px sprite
-	ypos = mouse.clientY
+	xpos = mouse.clientX; // presuming 32px sprite
+	ypos = mouse.clientY;
 	document.getElementById('main').setAttribute('onClick', '');
 	cnt.gotox = 32*f(xpos/32);
 	cnt.gotoy = 32*f(ypos/32);

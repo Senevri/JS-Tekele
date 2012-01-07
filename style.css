@@ -7,11 +7,12 @@ A:hover {text-decoration: none; color: red;}
 	background-color:#e0e0e0; 
 	width:640px; 
 	height:360px;	
+	background-image:url("tile.png");
 }
 
 #menu {
 	position:relative;	
-	
+	background-color:#e0e0ff;
 	
 	padding: 3px;
 	float: left;
@@ -22,8 +23,7 @@ A:hover {text-decoration: none; color: red;}
 }
 #stats {
 	position:relative;	
-	
-	
+	background-color:#e0e0ff;
 	padding: 3px;
 	float: left;
 	margin: 10px; border-color: black;  border: 3px;
