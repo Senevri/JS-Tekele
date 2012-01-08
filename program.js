@@ -19,6 +19,7 @@ var engineUpdate = function(){
 	debug.write("action: " + action);	
 	while (i<creatures.length){
 		c = creatures[i];
+		c.clickable('selected=creatures[' + i + '].select()');
 		if (c.id != selected) {
 			document.getElementById(c.id).style.backgroundColor='green';
 		}
@@ -35,7 +36,7 @@ var engineUpdate = function(){
 		sel.style.backgroundColor='red'; 
 		//debug.write("dy: " + c.xspeed + c.yspeed); 		
 	}
-	setTimeout(engineUpdate, 500);
+	setTimeout(engineUpdate, 250);
 }
 
 /* ajax can only test on actual server*/
@@ -51,25 +52,23 @@ dos.animate();
 creatures.push(uno);
 creatures.push(dos);
 
-/*
-test_one();
-test_two();
-
-function test_one(){
+var test_one = (function (){
 	debug.write("one-------");
-	setTimeout("test_one()", 1000);
-}
+	this.to = setTimeout(test_one, 500);
+});
 
-function test_two(){
+var test_two = (function (){
 	debug.write("two++++++++");
-	setTimeout("test_two()", 500);
-}
-*/
+	this.to = setTimeout(test_two, 500 );
+});
+//test_one();
+//test_two();
 
 function generateWar(id) {
 	war = new Widget(id); 
 	war.add(moveableTag(id, '', 6*32, 3*32))
 	war.drawTo('main');
+	var me=this;
 	this.widget = war;
 	this.id = this.widget.id;
 	//his.inheritfrom(id, '', 200, 100);
@@ -80,7 +79,7 @@ function generateWar(id) {
 	//debug.write(this.id);
 	//this = moveable("war1", '', 200, 100);
 	this.clickable = clickable;
-	this.clickable('selected=' + this.id + '.select()');
+	//this.clickable('selected=' + this.id + '.select()');
 	this.animation = [];
 	this.animation.attack = new Animation(this.id, ["warrior0001.png", "warrior0003.png"], 800);
 	this.animation.walk = new Animation(this.id, ["warrior.png", "warrior2.png"], 200);
@@ -100,6 +99,7 @@ function generateWar(id) {
 		}
 		if (0 != this.playing ) clearTimeout(this.playing);
 		this.playing = setTimeout(closure, this.animation.idle.delay);
+		return this.anim;
 	}
 	this.move = function (x, y) {
 		move(this.id, x*32, y*32);
@@ -112,7 +112,7 @@ function generateWar(id) {
 }
 
 function takeDamage (){
-	var w, target, attacker, dam;
+ 	var w, target, attacker, dam;
 	attacker = fetchCreature(seme);
 	attacker.anim="idle";
 	attacker.animate();
@@ -135,7 +135,7 @@ function takeDamage (){
 }
 
 
-//view_animation(["warrior.png", "warrior3.png"], 2);
+view_animation(["warrior.png", "warrior3.png"], 2);
 /*duud = new Widget('duud');
 varjo = new generateWar();
 move(varjo.id, 100,0);
@@ -158,9 +158,9 @@ function showstats(){
 	genstat('atk', this.stats.atk);
 	genstat('def', this.stats.def);
 	
-	menu = '<a href="#" onClick="' + this.id +
-		'.moveAction();" ><div class="button">move</div></a><a href="#" onClick="' + this.id +
-		'.attackAction();"><div class="button">attack</div></a> ';
+	menu = '<a href="#" onClick="fetchCreature(\'' + this.id +
+		'\').moveAction();" ><div class="button">move</div></a><a href="#" onClick="fetchCreature(\'' + this.id +
+		'\').attackAction();"><div class="button">attack</div></a> ';
 	//debug.write(stats);
 
 	document.getElementById('menu').innerHTML = menu; 
@@ -181,7 +181,7 @@ function setOnSelect(id, func) {
 }
 function moveAction() {
 	//	debug.write("moveaction") ;
-	action = "moveToAndDisable(selected)";
+	action = moveToAndDisable;
 	this.anim = "walk";	
 	this.animate();
 	//setOnSelect(this.id, showstats);
@@ -272,15 +272,17 @@ function attackTargetedObject(id) {
 	
 //	document.getElementById('main').setAttribute('onClick', 'changeAnimation()');
 }
-function moveToAndDisable(id){ 
+function moveToAndDisable(){
+	id = selected;
 	var cnt = fetchContainer(id), xpos, ypos, dx=null, dy=null, a, f, mpi;
 	cnt.xspeed=0;
 	cnt.yspeed=0;
+	console.log(id)
 	var a=Math.abs;
 	var f=Math.floor;
 	xpos = mouse.clientX; // presuming 32px sprite
 	ypos = mouse.clientY;
-	document.getElementById('main').setAttribute('onClick', '');
+	//document.getElementById('main').setAttribute('onClick', '');
 	console.log('should be 0, 0: ',cnt.xspeed, cnt.yspeed)
 	cnt.gotox = 32*f(xpos/32);
 	cnt.gotoy = 32*f(ypos/32);

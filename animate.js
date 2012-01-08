@@ -41,42 +41,40 @@ function fetchContainer(id) {
 	while (i<animation_stack.length) {
 		container = animation_stack[i];
 		if (container.id === id) { break; }
-			i++;
+		i++;
 	}
-	return container;
+	return container; //correct or last container
 }
 
 function Animation_loop(widget) {
 	var tick, i = 0, a, container;
 	//dx=0;
 	container = fetchContainer(widget);
+    //if (0!= container.playing) clearTimeout(container.playing);
 	var anim = container.anim;
 	a = container.animation[anim];
 	if (a.tick==false) a.tick=true;
 	else a.tick=false;
 	
-	//clearTimeout(container.playing);
 	this.setContainer = function (cnt)  {
 		container = cnt;
-		//debug.write(this.container.id);
 	}
 	if (container.moving && a.tick){
 		animate_move(container);
 	}
-	//setTimeout(a.play, a.delay);
 	a.play();
 	var closure = function (){
 		Animation_loop(container.id);
 	}
-    if (0!= container.playing) clearTimeout(container.playing);
-	//container.playing = setTimeout(('Animation_loop("'+container.id+'", "'+container.anim+'")'), a[anim].delay));
 	container.playing = setTimeout(closure, a.delay);
+	
 	
 }
 
 function view_animation(frames, count) {
 	var al, out, i, wframes, animview, cnt;
 	out = "";
+	if (0==count) { count = frames.length; }
 	for (i = 0; i < count; i++) {
 		out += '<img src="' + frames[i] + '" />';
 	}
@@ -99,14 +97,14 @@ function view_animation(frames, count) {
 	animation_stack.push(animview); // any widget with an animation needs to be pushed there.
 	g_anim =animview.animation;
 	//runThatAnim();
-	al=new Animation_loop(animview.id, 'default');
+	//al=new Animation_loop(animview.id, 'default');
+	runThatAnim();
 }
 var g_anim;
 
 function runThatAnim () {
 	g_anim.default.play();
-	setTimeout(runThatAnim, g_anim.default.delay);
-
+	return setTimeout(runThatAnim, g_anim.default.delay);
 }
 
 
@@ -121,6 +119,7 @@ function animate_move(actor) {
 	dy = actor.gotoy - actor.y
 	
 	if (actor.xspeed === 0 && actor.yspeed === 0) {
+		console.log ('set actor speed to ', actor.xspeed, actor.yspeed)
 		actor.xspeed = dx/32.0;
 		actor.yspeed = dy/32.0;
 	}
@@ -129,6 +128,7 @@ function animate_move(actor) {
 	actor.x = actor.x + actor.xspeed;
 	actor.y = actor.y + actor.yspeed;	
 	if (dy ===0 && dx===0 ) {
+		console.log('stopped moving ', actor)
 		moveTo(actor.id, parseInt(tx), parseInt(ty));
 		actor.xspeed=0;
 		actor.yspeed=0;

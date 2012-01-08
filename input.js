@@ -131,10 +131,13 @@ this.getMouseXY = function (ev) {
 this.getMouseDown = function (ev){
 	mouse = ev;
 	if (ev.which===1 && Input.command != null) {
-		setTimeout(Input.command,0);
+		//setTimeout(Input.command,0);
+		Input.command();
 		Input.command=null;
-		debug.write(Input.command);
+		//debug.write(Input.command);
 	} 
+	//if (ev.which===2) {
+	//};
 }
 
 /*function isdefined(variable) {
