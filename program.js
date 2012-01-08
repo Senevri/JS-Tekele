@@ -22,8 +22,8 @@ var engineUpdate = function(){
 		if (c.id != selected) {
 			document.getElementById(c.id).style.backgroundColor='green';
 		}
-		if (c.xspeed===c.yspeed===0){
-			//c.moving = false;
+		if (c.xspeed===0 && c.yspeed===0){
+			c.moving = false;
 			c.anim="idle";
 			c.animate();
 		}		
@@ -35,18 +35,17 @@ var engineUpdate = function(){
 		sel.style.backgroundColor='red'; 
 		//debug.write("dy: " + c.xspeed + c.yspeed); 		
 	}
-	setTimeout("engineUpdate()", 500);
+	setTimeout(engineUpdate, 500);
 }
 
-engineUpdate();
 /* ajax can only test on actual server*/
 //testAjax();
 
 uno = new generateWar("uno");
 dos = new generateWar("dos");
 dos.stats={"hp": 12, "atk": 2, "def": 13};
-move("dos", 96, 0);
-dos.gotox=288;
+dos.move(3,0);
+//dos.gotox=288;
 uno.animate();
 dos.animate();
 creatures.push(uno);
@@ -68,16 +67,16 @@ function test_two(){
 */
 
 function generateWar(id) {
-	war = new Widget(id);
-	war.add(moveableTag(id, '', 192, 96))
+	war = new Widget(id); 
+	war.add(moveableTag(id, '', 6*32, 3*32))
 	war.drawTo('main');
 	this.widget = war;
 	this.id = this.widget.id;
 	//his.inheritfrom(id, '', 200, 100);
-	this.gotox=192;
-	this.gotoy=96;
-	this.x=192;
-	this.y=96;
+	this.gotox=6*32;
+	this.gotoy=3*32;
+	this.x=this.gotox;
+	this.y=this.gotoy;
 	//debug.write(this.id);
 	//this = moveable("war1", '', 200, 100);
 	this.clickable = clickable;
@@ -95,8 +94,19 @@ function generateWar(id) {
 	this.attackAction = attackAction;
 	animation_stack.push(this);
 	this.animate = function () {
-		clearTimeout(this.playing);
-		this.playing = setTimeout("Animation_loop('" + this.id + "','" + this.anim + "' )", this.animation.idle.delay);
+		var id = this.id;
+		var closure = function () {
+			Animation_loop(id);
+		}
+		if (0 != this.playing ) clearTimeout(this.playing);
+		this.playing = setTimeout(closure, this.animation.idle.delay);
+	}
+	this.move = function (x, y) {
+		move(this.id, x*32, y*32);
+		this.x += x*32;
+		this.y += y*32;
+		this.gotox = this.x;
+		this.gotoy = this.y;
 	}
 	return this;
 }
@@ -133,7 +143,7 @@ duud.add(varjo);*/
 //test_widgets();
 
 Function.prototype.method = function (name, func) {
-	this.prototype[name] = func;
+	this.prototype[name] = func; 
 	return this;
 };
 
@@ -170,7 +180,7 @@ function setOnSelect(id, func) {
 		}
 }
 function moveAction() {
-	//	debug.write("moveaction");
+	//	debug.write("moveaction") ;
 	action = "moveToAndDisable(selected)";
 	this.anim = "walk";	
 	this.animate();
@@ -202,16 +212,18 @@ function cancelAction() {
 function attackAction() {
 	// need to make the onclick or rather onselect action attack a target.. for that we need a objectlist.
 	var i = 0, c=undefined;
-	selected.moving=false;
+	var c = fetchCreature(selected)
+	c.moving=false;
 	action="attackAction()";
 	input.setCommand("cancelAction()");
 	seme = this.id;
-	selected.anim = "attack";
-	selected.animate();
+	c.anim = "attack";
+	console.log(selected);
+	c.animate();
 	//document.onmousemove = enableMainAction;
 	document.onmousemove = enableMainAction;
 	while (i<creatures.length){
-		c = creatures[i];
+		var c = creatures[i];
 		if (c.id!= this.id) {
 			c.onselect = takeDamage;
 		}
@@ -264,14 +276,20 @@ function moveToAndDisable(id){
 	var cnt = fetchContainer(id), xpos, ypos, dx=null, dy=null, a, f, mpi;
 	cnt.xspeed=0;
 	cnt.yspeed=0;
-	a=Math.abs;
-	f=Math.floor;
+	var a=Math.abs;
+	var f=Math.floor;
 	xpos = mouse.clientX; // presuming 32px sprite
 	ypos = mouse.clientY;
 	document.getElementById('main').setAttribute('onClick', '');
+	console.log('should be 0, 0: ',cnt.xspeed, cnt.yspeed)
 	cnt.gotox = 32*f(xpos/32);
 	cnt.gotoy = 32*f(ypos/32);
-	cnt.moving = true;	
-	
-	action=null;
+	cnt.moving = true;		
+	action=null; 
 }
+
+engineUpdate();
+var MainLoop = (function () {
+
+//	setTimeout(engineUpdate, 500);
+})();

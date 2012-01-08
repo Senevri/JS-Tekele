@@ -69,7 +69,7 @@ function move(id, xshift, yshift) { // well, this is a game logic thing anyhow.
 	x = x.substring(0, x.length - 2);
 	y = y.substring(0, y.length - 2);
 	e.style.left = ((parseInt(x)) + xshift) + 'px';
-	e.style.top = ((parseInt(y)) + yshift) + 'px';
+	e.style.top = ((parseInt(y)) + yshift) + 'px';	
 }
 function makemoveable(id) {
 	var e = document.getElementById(id);
