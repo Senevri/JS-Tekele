@@ -97,7 +97,10 @@ function generateWar(id) {
 		var closure = function () {
 			Animation_loop(id);
 		}
-		if (0 != this.playing ) clearTimeout(this.playing);
+		if (0 != this.playing ) {
+			clearTimeout(this.playing);
+			this.playing = 0;
+		}
 		this.playing = setTimeout(closure, this.animation.idle.delay);
 		return this.anim;
 	}

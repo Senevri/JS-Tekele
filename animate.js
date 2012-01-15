@@ -12,6 +12,7 @@ function Animation(id, fr, delay) {
 	if (this.animation === 'undefined') {
 		this.animation = []
 	}
+	this.playing = 0;
 	this.id = id;
 	this.tick = false;
 	//this.frames;
@@ -30,7 +31,7 @@ function Animation(id, fr, delay) {
 			a.curframe = 0;
 		}
 		this.content = '<img src="' + a.frames[a.curframe] + '" style="width:32px; height:32px;"/>';
-		this.refresh();	
+		this.refresh( );	
 	};
 }
 
@@ -50,9 +51,12 @@ function Animation_loop(widget) {
 	var tick, i = 0, a, container;
 	//dx=0;
 	container = fetchContainer(widget);
-    //if (0!= container.playing) clearTimeout(container.playing);
 	var anim = container.anim;
 	a = container.animation[anim];
+    if (0!=a.playing) {
+		clearTimeout(a.playing);
+		a.playing = 0;
+	}
 	if (a.tick==false) a.tick=true;
 	else a.tick=false;
 	
@@ -66,7 +70,8 @@ function Animation_loop(widget) {
 	var closure = function (){
 		Animation_loop(container.id);
 	}
-	container.playing = setTimeout(closure, a.delay);
+	container.playing  = setTimeout(closure, a.delay);
+	a.playing = container.playing; 
 	
 	
 }
