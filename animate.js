@@ -91,7 +91,7 @@ function runThatAnim () {
 }
 
 
-function animate_move(actor) {
+/*function animate_move(actor) {
 
 	var step, dx, dy, tx, ty, cnt;
 	var a = Math.abs;
@@ -100,6 +100,12 @@ function animate_move(actor) {
 	ty = actor.gotoy;
 	dx = actor.gotox - actor.x
 	dy = actor.gotoy - actor.y
+	if (dx===0 && dy===0) {
+		if (actor.anim != 'idle') {
+			actor.animate('idle');
+		}
+		return;
+	}
 	
 	if (actor.xspeed === 0 && actor.yspeed === 0) {
 		console.log ('set actor speed to ', actor.xspeed, actor.yspeed)
@@ -117,10 +123,11 @@ function animate_move(actor) {
 		actor.yspeed=0;
 		actor.x = tx;
 		actor.y = ty;
-		actor.moving = false;
+		clearTimeout(actor.moving);
 		actor.animate('idle');
 		return;
+	} else {
+		actor.moving = setTimeout(function(){animate_move(actor);}, 200);
 	}
-	setTimeout(function(){animate_move(actor);}, 200);
 
-}
+}*/

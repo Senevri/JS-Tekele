@@ -1,4 +1,8 @@
-var input = Input.getInstance(), xpos, ypos;
+$(document).ready(function() {
+
+var input = window.input.getInstance(), xpos, ypos;
+
+if (!window.app) window.app = {};
 
 input.initKeys();
 input.initMouse();
@@ -6,20 +10,36 @@ var selected = input.selected;
 var select = input.select;
 
 var action = null; 
-var creatures = [];
+window.creatures = [];
+var creatures = window.creatures;
 debug = new debug();
 debug.write("debug:");
+
+var fetchCreature = (function (id) {
+	var i = 0;
+	while (i<creatures.length){
+		c = creatures[i];
+		if (c.id === id ) {
+			return c;
+		}
+		i++;
+	}
+	return false;	
+});
+window.app.fetchCreature = fetchCreature;
 
 //testfoo();
 //testgraphics();
 var engineUpdate = function(){
+	input = window.input;
 	var c, i=0, sel = document.getElementById(selected);
 	debug.clear();
 	debug.write("selected: " + selected);
+	input.selected = selected;
 	debug.write("action: " + action);	
 	while (i<creatures.length){
 		c = creatures[i];
-		c.clickable('selected=creatures[' + i + '].select()');
+		c.clickable('selected=window.creatures[' + i + '].select()');
 		if (c.id != selected) {
 			document.getElementById(c.id).style.backgroundColor='green';
 		}
@@ -31,7 +51,7 @@ var engineUpdate = function(){
 	}
 	i=0;
 	if (sel) {
-		c = fetchCreature(sel);		
+		c = window.app.fetchCreature(sel);		
 		sel.style.backgroundColor='red'; 
 		//debug.write("dy: " + c.xspeed + c.yspeed); 		
 	}
@@ -65,14 +85,14 @@ var test_two = (function (){
 
 function generateWar(id) {
 	war = new Widget(id); 
-	war.add(moveableTag(id, '', 6*32, 3*32))
+	war.add(moveableTag(id, '', 8+6*32, 8+3*32))
 	war.drawTo('main');
 	var me=this;
 	this.widget = war;
 	this.id = this.widget.id;
 	//his.inheritfrom(id, '', 200, 100);
-	this.gotox=6*32;
-	this.gotoy=3*32;
+	this.gotox=8+(6*32);
+	this.gotoy=8+(3*32);
 	this.x=this.gotox;
 	this.y=this.gotoy;
 	//debug.write(this.id);
@@ -107,12 +127,27 @@ function generateWar(id) {
 		this.gotox = this.x;
 		this.gotoy = this.y;
 	}
+	this.animate_move = function(){
+		var a = Math.abs;
+		var f = Math.floor;
+		var self = this;
+		this.moving = setTimeout( function () {
+			if (self.x != self.gotox || self.gotoy!=self.y) {
+				self.x = self.x + f(8*((self.gotox-self.x)/a(self.gotox)));
+				self.y = self.y + f(8*((self.gotoy-self.y)/a(self.gotoy)));
+				moveTo(self.id, self.x, self.y);
+				self.animate_move();
+			} else {
+				clearTimeout(self.moving);
+			}
+		}, 18);
+	}
 	return this;
 }
 
 function takeDamage (){
  	var w, target, attacker, dam;
-	attacker = fetchCreature(seme);
+	attacker = window.app.fetchCreature(seme);
 	attacker.animate("idle");
 	attacker.onselect = showstats;
 	selected = attacker.select();
@@ -156,7 +191,7 @@ function showstats(){
 	genstat('atk', this.stats.atk);
 	genstat('def', this.stats.def);
 	
-	menu = '<a href="#" onClick="fetchCreature(\'' + this.id +
+	menu = '<a href="#" onClick="window.app.fetchCreature(\'' + this.id +
 		'\').moveAction();" ><div class="button">move</div></a><a href="#" onClick="fetchCreature(\'' + this.id +
 		'\').attackAction();"><div class="button">attack</div></a> ';
 	//debug.write(stats);
@@ -227,22 +262,12 @@ function attackAction() {
 //	enableMainAction();
 }
 
-function fetchCreature(id) {
-	var i = 0;
-	while (i<creatures.length){
-		c = creatures[i];
-		if (c.id === id ) {
-			return c;
-		}
-		i++;
-	}
-	return false;	
-}
 
 function enableMainAction() {
 	//document.getElementById('main').setAttribute('onClick', action);
 	document.onmousemove = input.getMouseXY;
-	input.setCommand(action);
+	window.input.setCommand(action);
+	console.log(window.input);
 }
 
 function enableCreatureAction(creature) {
@@ -267,11 +292,9 @@ function attackTargetedObject(id) {
 //	document.getElementById('main').setAttribute('onClick', 'changeAnimation()');
 }
 function moveToAndDisable(){
-	id = selected;
-	var cnt = fetchCreature(id), xpos, ypos, dx=null, dy=null, a, f, mpi;
-	cnt.xspeed=0;
-	cnt.yspeed=0;
-	console.log(id)
+	id = window.input.selected;
+	var cnt = window.app.fetchCreature(id), xpos, ypos, dx=null, dy=null, a, f, mpi;
+	console.log('id ', id, 'cnt', cnt)
 	var a=Math.abs;
 	var f=Math.floor;
 	xpos = mouse.clientX; // presuming 32px sprite
@@ -281,7 +304,7 @@ function moveToAndDisable(){
 	cnt.gotox = 32*f(xpos/32);
 	cnt.gotoy = 32*f(ypos/32);
 	action=null;
-	animate_move(cnt);
+	//cnt.animate_move();
 }
 
 engineUpdate();
@@ -289,3 +312,5 @@ var MainLoop = (function () {
 
 //	setTimeout(engineUpdate, 500);
 })();
+
+});

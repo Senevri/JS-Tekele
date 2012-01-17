@@ -1,6 +1,19 @@
 
 var mouse;
+$(document).ready(function() {
+if (window && !window.input) {
+	console.log('window::', window);
+	window.input = new Input();
+}
 
+window.input.getInstance = function () {
+	if(!window.input) {
+		window.input = new Input();
+	}
+	return window.input;
+}
+console.log(window.input);
+});
 
 function Input() {
 	/**
@@ -19,7 +32,8 @@ function Input() {
 
 
 	this.select = function () {
-		selected = this;
+		window.input.selected = this.id;
+		console.log('imma selecting', this, window.input);
 		this.onselect();
 		return this.id;
 	}
@@ -130,9 +144,12 @@ function Input() {
 	/**Mousedown **/
 	this.getMouseDown = function (ev){
 		mouse = ev;
-		if (ev.which===1 && Input.command != null) {
+		var Input = window.input
+		console.log(ev);
+		console.log(window.input.command);
+		if (ev.which===1 && window.input.command != null) {
 			//setTimeout(Input.command,0);
-			console.log('command: ', Input.command);
+			console.log('command: ', input.command);
 			Input.command();
 			Input.command=null;
 			//debug.write(Input.command);
@@ -147,11 +164,3 @@ function Input() {
 	  }*/
 }
 
-Input.instance = null;
-
-Input.getInstance = function () {
-	if(Input.instance===null) {
-		Input.instance = new Input();
-	}
-	return Input.instance;
-}
