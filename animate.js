@@ -3,15 +3,16 @@
 //var moving=false;
 //var tx; 
 //var ty;
-var animation_stack = [];
 
 function is_array(input) {
     return typeof (input) === 'object' && (input instanceof Array);
 }
+
 function Animation(id, fr, delay) {
 	if (this.animation === 'undefined') {
 		this.animation = []
 	}
+	this.playing=0;
 	this.id = id;
 	this.tick = false;
 	//this.frames;
@@ -32,43 +33,26 @@ function Animation(id, fr, delay) {
 		this.content = '<img src="' + a.frames[a.curframe] + '" style="width:32px; height:32px;"/>';
 		this.refresh();	
 	};
+	this.start = function(){
+		this.playing = Animation_loop(this);
+	}
+	this.stop = function () {
+		clearTimeout(this.playing);
+	};
 }
 
 var dx = null;
 var dy = null;
-function fetchContainer(id) {
-	var container, i = 0;
-	while (i<animation_stack.length) {
-		container = animation_stack[i];
-		if (container.id === id) { break; }
-		i++;
-	}
-	return container; //correct or last container
-}
 
-function Animation_loop(widget) {
+function Animation_loop(animation) {
 	var tick, i = 0, a, container;
 	//dx=0;
-	container = fetchContainer(widget);
-    //if (0!= container.playing) clearTimeout(container.playing);
-	var anim = container.anim;
-	a = container.animation[anim];
-	if (a.tick==false) a.tick=true;
-	else a.tick=false;
-	
-	this.setContainer = function (cnt)  {
-		container = cnt;
-	}
-	if (container.moving && a.tick){
-		animate_move(container);
-	}
+	a = animation
+    	//if (0!= a.playing) clearTimeout(a.playing);
 	a.play();
-	var closure = function (){
-		Animation_loop(container.id);
-	}
-	container.playing = setTimeout(closure, a.delay);
-	
-	
+	a.playing = setTimeout(function (){
+		Animation_loop(a);
+	}, a.delay);		
 }
 
 function view_animation(frames, count) {
@@ -94,7 +78,6 @@ function view_animation(frames, count) {
 	cnt.drawTo('main');
 	animview.animation = [];
 	animview.animation["default"] = new Animation(animview.id, frames, 200);
-	animation_stack.push(animview); // any widget with an animation needs to be pushed there.
 	g_anim =animview.animation;
 	//runThatAnim();
 	//al=new Animation_loop(animview.id, 'default');
@@ -135,6 +118,9 @@ function animate_move(actor) {
 		actor.x = tx;
 		actor.y = ty;
 		actor.moving = false;
-		actor.anim = "idle";
+		actor.animate('idle');
+		return;
 	}
+	setTimeout(function(){animate_move(actor);}, 200);
+
 }

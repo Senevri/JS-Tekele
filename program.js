@@ -25,8 +25,7 @@ var engineUpdate = function(){
 		}
 		if (c.xspeed===0 && c.yspeed===0){
 			c.moving = false;
-			c.anim="idle";
-			c.animate();
+			c.animate("idle");
 		}		
 		i++;
 	}
@@ -47,8 +46,8 @@ dos = new generateWar("dos");
 dos.stats={"hp": 12, "atk": 2, "def": 13};
 dos.move(3,0);
 //dos.gotox=288;
-uno.animate();
-dos.animate();
+uno.animate('idle');
+dos.animate('idle');
 creatures.push(uno);
 creatures.push(dos);
 
@@ -80,7 +79,7 @@ function generateWar(id) {
 	//this = moveable("war1", '', 200, 100);
 	this.clickable = clickable;
 	//this.clickable('selected=' + this.id + '.select()');
-	this.animation = [];
+	this.animation = {};
 	this.animation.attack = new Animation(this.id, ["warrior0001.png", "warrior0003.png"], 800);
 	this.animation.walk = new Animation(this.id, ["warrior.png", "warrior2.png"], 200);
 	this.animation.idle = new Animation(this.id, ["warrior2.png", "warrior3.png"], 800);
@@ -91,16 +90,16 @@ function generateWar(id) {
 	this.anim = "idle";
 	this.moveAction = moveAction;
 	this.attackAction = attackAction;
-	animation_stack.push(this);
-	this.animate = function () {
-		var id = this.id;
-		var closure = function () {
-			Animation_loop(id);
+	this.animate = function (anima) {
+		if ('undefined' === anima) {
+			return
 		}
-		if (0 != this.playing ) clearTimeout(this.playing);
-		this.playing = setTimeout(closure, this.animation.idle.delay);
-		return this.anim;
+		console.log('animation: ', anima);
+		this.animation[this.anim].stop();
+		this.anim = anima;
+		this.animation[this.anim].start();
 	}
+
 	this.move = function (x, y) {
 		move(this.id, x*32, y*32);
 		this.x += x*32;
@@ -114,8 +113,7 @@ function generateWar(id) {
 function takeDamage (){
  	var w, target, attacker, dam;
 	attacker = fetchCreature(seme);
-	attacker.anim="idle";
-	attacker.animate();
+	attacker.animate("idle");
 	attacker.onselect = showstats;
 	selected = attacker.select();
 	xpos = mouse.clientX;
@@ -182,8 +180,7 @@ function setOnSelect(id, func) {
 function moveAction() {
 	//	debug.write("moveaction") ;
 	action = moveToAndDisable;
-	this.anim = "walk";	
-	this.animate();
+	this.animate('walk');
 	//setOnSelect(this.id, showstats);
 	document.onmousemove = enableMainAction;
 	//	enableMainAction();
@@ -196,8 +193,7 @@ function cancelAction() {
 	crt.xspeed=0;
 	crt.yspeed=0;
 	action="";
-	crt.anim="idle";
-	crt.animate();
+	crt.animate('idle');
 	seme = "";
 
 	while (i<creatures.length){
@@ -217,9 +213,8 @@ function attackAction() {
 	action="attackAction()";
 	input.setCommand("cancelAction()");
 	seme = this.id;
-	c.anim = "attack";
+	c.animate("attack");
 	console.log(selected);
-	c.animate();
 	//document.onmousemove = enableMainAction;
 	document.onmousemove = enableMainAction;
 	while (i<creatures.length){
@@ -263,9 +258,8 @@ function attackTargetedObject(id) {
 	//selected=cnt.id;
 	cnt.onselect = showstats;
 	c2.onselect = showstats;
-	cnt.anim = "idle";
-	c2.anim = "idle";
-	c2.animate();
+	//cnt.anim = "idle";
+	c2.animate('idle');
 	clear('menu');
 	hideId('menu');
 	hideId('stats');
@@ -274,7 +268,7 @@ function attackTargetedObject(id) {
 }
 function moveToAndDisable(){
 	id = selected;
-	var cnt = fetchContainer(id), xpos, ypos, dx=null, dy=null, a, f, mpi;
+	var cnt = fetchCreature(id), xpos, ypos, dx=null, dy=null, a, f, mpi;
 	cnt.xspeed=0;
 	cnt.yspeed=0;
 	console.log(id)
@@ -286,8 +280,8 @@ function moveToAndDisable(){
 	console.log('should be 0, 0: ',cnt.xspeed, cnt.yspeed)
 	cnt.gotox = 32*f(xpos/32);
 	cnt.gotoy = 32*f(ypos/32);
-	cnt.moving = true;		
-	action=null; 
+	action=null;
+	animate_move(cnt);
 }
 
 engineUpdate();
