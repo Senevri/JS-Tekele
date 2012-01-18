@@ -32,7 +32,8 @@ function Input() {
 
 
 	this.select = function () {
-		window.input.selected = this.id;
+		window.input.selected = this
+		this.selected = this
 		console.log('imma selecting', this, window.input);
 		this.onselect();
 		return this.id;
