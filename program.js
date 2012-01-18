@@ -1,4 +1,13 @@
-var input = Input.getInstance(), xpos, ypos;
+$(document).ready(function() {
+
+if(!console) {
+	console = {};
+	console.log = function(str){};
+}
+
+var input = window.input.getInstance(), xpos, ypos;
+
+if (!window.app) window.app = {};
 
 input.initKeys();
 input.initMouse();
@@ -10,8 +19,20 @@ var creatures = [];
 debug = new debug();
 debug.write("debug:");
 
-//testfoo();
-//testgraphics();
+var fetchCreature = (function (id) {
+	var i = 0;
+	while (i<creatures.length){
+		c = creatures[i];
+		if (c.id === id ) {
+			return c;
+		}
+		i++;
+	}
+	return false;	
+});
+window.app.fetchCreature = fetchCreature;
+/* Magic numbers: Square = 32, border for background = 8
+ */
 var engineUpdate = function(){
 	var c, i=0, sel = document.getElementById(selected);
 	debug.clear();
@@ -111,6 +132,66 @@ function generateWar(id) {
 		this.gotox = this.x;
 		this.gotoy = this.y;
 	}
+	this.animate_move = function(){
+		var a = Math.abs;
+		var f = Math.floor;		
+		var r = Math.round;
+		var self = this;	
+
+		this.moving = setTimeout( function () {
+			var cur_pos = self.get_square();
+			var target_pos = self.get_square(true);			
+			var boundary = (cur_pos[0]<=19 && cur_pos[1]<=10);
+			if (boundary && cur_pos[0] != target_pos[0] || cur_pos[1] != target_pos[1]) {
+				var speedx = (8*((self.gotox-self.x)/a(self.gotox)));
+				var speedy = (8*((self.gotoy-self.y)/a(self.gotoy)));
+				speedx = ((a(speedx) > 8) ? 8*(speedx/a(speedx)) : speedx);
+				speedy = ((a(speedy) > 8) ? 8*(speedy/a(speedy)) : speedy);
+				//self.x = self.x + ((self.gotox + speedx)-self.x)>8 ? (speedx>1 ? speedx : 1) : 0;
+				//self.y = self.y + ((self.gotoy + speedx)-self.y)>8 ? (speedy>1 ? speedy : 1) : 0;
+				if (speedx) self.x += (a(speedx)>1 ? speedx : a(speedx)/speedx );
+				if (speedy) self.y += (a(speedy)>1 ? speedy : a(speedy)/speedy );
+				if (isNaN(self.y) || isNaN(self.x)) { // debug code 
+					console.log('error, x/y', self.x, self.y);
+					console.log('error, speeds',  speedx, speedy);
+					self.y = self.gotoy;
+					self.animate('idle');
+					return;
+				}
+				moveTo(self.id, r(self.x), r(self.y));
+				self.animate_move();
+			} else {
+				if (!boundary) {
+					if (self.gotox>8+(32*19)) {
+						self.gotox = 8+640-32;
+					}
+					if (self.gotoy>8+(32*10)) {
+						self.gotoy = 8+320;
+					}
+				}
+				self.x = self.gotox;
+				self.y = self.gotoy;
+				moveTo(self.id, self.x, self.y); //snap to grid
+				clearTimeout(self.moving);
+				self.moving = 0;
+				self.animate('idle');
+			}
+		}, 18);
+	};
+	this.get_square = function(x, y){
+		var round = Math.round;
+		if (x==y && y==undefined) { 
+			x = (this.x-8)/32;
+			y = (this.y-8)/32;
+		} else if (x == true && y == undefined) {
+			x = (this.gotox-8)/32;
+			y = (this.gotoy-8)/32;
+		} else {
+			x = (x-8)/32;
+			y = (y-8)/32;
+		}
+		return [round(x), round(y)];
+	};
 	return this;
 }
 
@@ -276,21 +357,24 @@ function attackTargetedObject(id) {
 //	document.getElementById('main').setAttribute('onClick', 'changeAnimation()');
 }
 function moveToAndDisable(){
-	id = selected;
-	var cnt = fetchContainer(id), xpos, ypos, dx=null, dy=null, a, f, mpi;
-	cnt.xspeed=0;
-	cnt.yspeed=0;
-	console.log(id)
+	cnt = window.input.selected;
+	id = cnt.id;
+	var xpos, ypos, dx=null, dy=null, a, f, mpi;
+	console.log('id ', id, 'cnt', cnt)
 	var a=Math.abs;
 	var f=Math.floor;
-	xpos = mouse.clientX; // presuming 32px sprite
-	ypos = mouse.clientY;
+	var r=Math.round;
+	xpos = mouse.clientX-8; // presuming 32px sprite
+	ypos = mouse.clientY-8;
+	xpos = (xpos<0? 0 : xpos);
+	ypos = (ypos<0? 0 : ypos);
 	//document.getElementById('main').setAttribute('onClick', '');
-	console.log('should be 0, 0: ',cnt.xspeed, cnt.yspeed)
-	cnt.gotox = 32*f(xpos/32);
-	cnt.gotoy = 32*f(ypos/32);
-	cnt.moving = true;		
-	action=null; 
+	cnt.gotox = 8+(32*f(xpos/32)); //0-32 = 0, 33-64 = 1
+	cnt.gotoy = 8+(32*f(ypos/32));
+	console.log('targetsquare, currentsquare:', cnt.get_square(true), cnt.get_square());
+	console.log('mouse, target:',xpos, ypos,  cnt.gotox, cnt.gotoy);
+	action=null;
+	cnt.animate_move();
 }
 
 engineUpdate();
