@@ -1,3 +1,16 @@
+//
+// if not loaded jquery, just run the thing
+// 
+try {
+	$
+} catch (ReferenceError){
+	window.$ = function(fn){
+		this.ready = function(fn){
+			fn();
+		}
+		return this;
+	};
+}
 
 var mouse;
 $(document).ready(function() {
