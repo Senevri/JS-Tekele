@@ -243,7 +243,7 @@ function showstats(){
 	genstat('def', this.stats.def);
 	
 	menu = '<a href="#" onClick="window.app.fetchCreature(\'' + this.id +
-		'\').moveAction();" ><div class="button">move</div></a><a href="#" onClick="fetchCreature(\'' + this.id +
+		'\').moveAction();" ><div class="button">move</div></a><a href="#" onClick="window.app.fetchCreature(\'' + this.id +
 		'\').attackAction();"><div class="button">attack</div></a> ';
 	//debug.write(stats);
 
@@ -275,7 +275,7 @@ function moveAction() {
 function cancelAction() {
 	document.getElementById('main').setAttribute('onClick', '');
 	if (selected==='object') {selected = selected.id; }
-	var crt = fetchCreature(selected), i=0;
+	var crt = window.app.fetchCreature(selected), i=0;
 	crt.xspeed=0;
 	crt.yspeed=0;
 	action="";
@@ -294,7 +294,9 @@ function cancelAction() {
 function attackAction() {
 	// need to make the onclick or rather onselect action attack a target.. for that we need a objectlist.
 	var i = 0, c=undefined;
-	var c = fetchCreature(selected)
+	var c = window.app.fetchCreature(selected)
+	if (!c) c=this;
+	
 	c.moving=false;
 	action="attackAction()";
 	input.setCommand("cancelAction()");

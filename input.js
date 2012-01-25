@@ -160,10 +160,10 @@ function Input() {
 		mouse = ev;
 		var Input = window.input
 		console.log(ev);
-		console.log(window.input.command);
-		if (ev.which===1 && window.input.command != null) {
+		console.log(Input.command);
+		if (ev.which===1 && Input.command != null) {
 			//setTimeout(Input.command,0);
-			console.log('command: ', input.command);
+			console.log('command: ', Input.command);
 			Input.command();
 			Input.command=null;
 			//debug.write(Input.command);
