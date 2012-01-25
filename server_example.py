@@ -13,10 +13,8 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
     def handle(self):
         import struct
         import base64
-        # self.request is the TCP socket connected to the client
         self.data = self.request.recv(1024).strip()
         self.buffer.append(self.data)
-        #print ("{} wrote:".format(self.client_address[2]))
         print(self.client_address[0], self.data)
         strbytes = str(self.data)
         lines = strbytes.lstrip('b').strip("'").split('\\r\\n')
@@ -35,7 +33,6 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                         f.close()
                         f = open(''.join([self.path, file_req]), 'rb')
                         reply=f.read()
-                        #reply = str(base64.b64encode(reply))
                         self.header = '\r\n'.join([self.header, 
                             'Content-Encoding: binary'])
 
