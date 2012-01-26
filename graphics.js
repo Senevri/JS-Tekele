@@ -34,7 +34,7 @@ function moveTo(id, xpos, ypos) {
 }
 
 function moveableTag(id, content, x, y){
-	this.header = '<div id="' + id + '"class="moveable" ' + this.clickable + 
+	this.header = '<div id="' + id + '"class="moveable" ' + 
 		' style="position:absolute;left:' + x + 'px;top:' + y + 'px;">'; 
 	this.footer = "</div>";
 	return this.header + content + this.footer;
@@ -48,7 +48,7 @@ function moveable(id, content, x, y) {
 	this.x = x; 
 	this.y = y;
 //	this.clickable="";
-	this.header = '<div id="' + id + '"class="moveable" ' + this.clickable + 
+	this.header = '<div id="' + id + '"class="moveable" ' + 
 		' style="position:absolute;left:' + x + 'px;top:' + y + 'px;">'; 
 	this.footer = "</div>";
 	this.update = function (header, content, footer) {	
@@ -69,7 +69,7 @@ function move(id, xshift, yshift) { // well, this is a game logic thing anyhow.
 	x = x.substring(0, x.length - 2);
 	y = y.substring(0, y.length - 2);
 	e.style.left = ((parseInt(x)) + xshift) + 'px';
-	e.style.top = ((parseInt(y)) + yshift) + 'px';
+	e.style.top = ((parseInt(y)) + yshift) + 'px';	
 }
 function makemoveable(id) {
 	var e = document.getElementById(id);

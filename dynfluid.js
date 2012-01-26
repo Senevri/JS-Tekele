@@ -1,3 +1,5 @@
+(function (){
+
 function sleep(ms)
 	{
 		var dt = new Date();
@@ -5,9 +7,12 @@ function sleep(ms)
 		while (new Date().getTime() < dt.getTime());
 	}
 
+var input = window.input;
+var widgets = [];
+
 //dynfluid.js
-initKeys();
-initMouse();
+input.initKeys();
+input.initMouse();
 //just because.  not needed really
 widgets.push(new Widget('init'));
 foo = new Widget('foo');
@@ -17,8 +22,13 @@ kangas.add("<canvas id='dk' width=600 height=300></canvas>");
 foo.add("<a href='' onclick='step()'>klik</a>")
 //widgets.push(foo);
 widgets.push(kangas);
-drawWidgetsTo('main');
+//drawWidgetsTo('main');
+for (i in widgets){
+	widgets[i].drawTo('main')
+}
 var canvas = document.getElementById('dk');
+canvas.style.marginLeft = 'auto';
+canvas.style.marginRight = 'auto';
 if (canvas.getContext){
 	/* do stuff here*/
 	//----
@@ -49,26 +59,38 @@ if (canvas.getContext){
 	
 	var j = 0;
 	//doStuff(ctx);
-	stamGrid(ctx); 
-	
-		//setTimeout("", 1000);
-	
+	//stamGrid(ctx); 
+	time = 0;
+	stamGrid_wrap(ctx);	
 	//----
 	
 }
 
+var time;
+function stamGrid_wrap(ctx){
+	time += 1;
+	if (time == 20){
+		time = 0;
+		surface[44]=255;
+	}
+	stamGrid(ctx);
+	setTimeout(function() { stamGrid_wrap(ctx) }, 30);
+}
+
 function stamGrid(ctx){
 	//käytetään surfacea 10x10 gridinä 
-	GtoL = function(x, y){
+	var GtoL = function(x, y){
 		return (y*10+x);
 	}
-	LtoG = function(i){
+	var LtoG = function(i){
 		var y = Math.floor(i/10);
 		var x = i-(10*y);
-		return [x,y];
+		return {'x':x, 'y':y}
+		//return [x,y];
 	}
+	this.GtoL = GtoL;
+	this.LtoG = LtoG;
 	//diffuse
-	
 	
 	i = 0;
 	
@@ -79,62 +101,67 @@ function stamGrid(ctx){
 	  */
 		//left, right, up, down
 		var cur = surface[i];
+		var curm = cur+momentum[i];
 		var coords = LtoG(i);
 		var lost_mass = 0;
-		if (coords[0]<9 && cur>surface[i+1]) {
-				lost_mass++;
-				surface[i+1]++;
-				momentum[i]=(cur-surface[i+1])-1;
-			}
-		if (coords[0]>0 && cur>surface[i-1]) {
-				lost_mass++;
-				surface[i-1]++;
-				momentum[i]=(cur-surface[i-1])-1;
-			}
+		if (coords.x<9 && curm>surface[i+1]) {
+			lost_mass++;
+			surface[i+1]++;
+			momentum[i+1]=(cur-surface[i+1]);
+		}
+		if (coords.x>0 && curm>surface[i-1]) {
+			lost_mass++;
+			surface[i-1]++;
+			momentum[i-1] +=(cur-surface[i-1]);
+		}
 		//var cur = surface[i];
-		var loc = GtoL(coords[0], coords[1]-1);
-		if (coords[1]>0 && cur>surface[loc]){
-				lost_mass++;
-				surface[loc]++;
-				momentum[i]=(cur-surface[i-10])-1;
-			}	
-		loc = GtoL(coords[0], coords[1]+1);
-		if(coords[1]<9 && cur>surface[loc]){
-				lost_mass++;
-				surface[loc]++;
-				momentum[i]=(cur-surface[i+10])-1;
-			}
+		var loc = GtoL(coords.x, coords.y-1);
+		var curm = cur+momentum[loc];
+		if (coords.y>0 && curm>surface[loc]){
+			lost_mass++;
+			surface[loc]++;
+			momentum[loc] +=(cur-surface[i-10]);
+		}	
+		loc = GtoL(coords.x, coords.y+1);
+		if(coords.y<9 && curm>surface[loc]){
+			lost_mass++;
+			surface[loc]++;
+			momentum[loc] +=(cur-surface[i+10]);
+		}
 		surface[i] = surface[i]-(lost_mass);
 		i++;			
 		//debug.write("foo");
 	}
 	
 	i = 0;
-while( i < surface.length-1){
-	 /* for each location in the grid 
-	  * if density is higher than neighbours, exchange some mass with
-	  * the neighbour.
+	while( i < surface.length){
+	 /* for each location in the grid
+	  * if there's momentum
 	  */
 		//left, right, up, down
 		var cur = surface[i];
 		var coords = LtoG(i);
 		var lost_mass = 0;
-			if(momentum[i]>3) {
-			surface[i] = surface[i] - 4;
+		if(momentum[i]>0) {
+			//surface[i] = surface[i] - 4;
 			momentum[i]=momentum[i]-4;
-			if (coords[0]<9) {
+			if (coords.x<9) {
 				surface[i+1] = surface[i+1] + 1;
-				}
-			if (coords[0]>0) {
+				} else {
+				momentum[i]++	
+			}
+			if (coords.x>0) {
 				surface[i-1] = surface[i-1] + 1;	
-				}
+				} else {
+				momentum[i]++	
+			}
 			//var cur = surface[i];
-			var loc = GtoL(coords[0], coords[1]-1);
-			if (coords[1]>0){
+			var loc = GtoL(coords.x, coords.y-1);
+			if (coords.y>0){
 				surface[i-10] = surface[i-10] + 1;
 				}	
-			loc = GtoL(coords[0], coords[1]+1);
-			if(coords[1]<9){
+			loc = GtoL(coords.x, coords.y+1);
+			if(coords.y<9){
 				surface[i+10] = surface[i+10] + 1;
 				}
 
@@ -155,7 +182,7 @@ while( i < surface.length-1){
 	ctx.moveTo(0,100);
 	var x=0; 
 	var y=0;
-	while( i <= surface.length){
+	while( i < surface.length){
 		//ctx.drawColor('green');
 		//ctx.Color(surface[i]);
 		ctx.fillStyle = 'rgb(0,100,'+ surface[i] +')';
@@ -169,7 +196,7 @@ while( i < surface.length-1){
 		i++;
 	}	
 	ctx.fill();
-	var t = setTimeout("stamGrid(ctx)", 200);
+	//var t = setTimeout("stamGrid(ctx)", 200);
 }
 /*
 function doStuff(ctx){
@@ -239,3 +266,4 @@ function doStuff(ctx){
 	var t = setTimeout("doStuff(ctx)", 200);
 }
 */
+})();
