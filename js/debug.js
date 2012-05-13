@@ -11,6 +11,7 @@ function debugWrite(message) {
 function debugClear() {
 	document.getElementById("debug").innerHTML = "";
 }
+
 function debug() {
 	this.debugflag = true;
 	this.write = debugWrite;
