@@ -7,7 +7,7 @@ A:hover {text-decoration: none; color: red;}
 	background-color:#e0e0e0; 
 	width:640px; 
 	height:360px;	
-	background-image:url("tile.png");
+	background-image:url("images/tile.png");
 }
 
 #menu {
