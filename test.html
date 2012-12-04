@@ -1,0 +1,58 @@
+<style type="text/css">
+	div.grouplist {
+		margin: 5px;
+		padding: 3px;
+		height: 32px;	
+		color: white;
+		font-style: bold;
+	}
+	.fldr {
+		background-color: yellow;	
+	}
+	div.inline {
+
+		margin-top: 10px;
+		/*
+		padding: 3px;
+		*/
+		display: inline;
+	}
+</style>
+<form id="folder_permissions">
+<table>
+	<thead>
+		<tr><td>Folders</td><td>Permissions</td><td>Groups</td></tr>	
+	</thead>
+	<tbody>
+		<tr>
+			<td valign="top" style="padding:2px";>
+				<!-- <table>
+					<tr><td class="fldr">[-]D Foldername</td></tr>
+					<tr><td>|</td></tr>
+					<tr><td>+</td><td class="fldr">[+]D Foldername</td></tr>
+				</table> -->
+				<div class="inline fldr">[-]D</div>
+				<div class="inline">Foldername</div>
+				<br />
+				<div class="inline">|</div><br />
+				<div class="inline">+</div>
+				<div class="inline fldr">[+]D</div>
+				<div class="inline">Foldername</div><br />
+			</td>
+			<td valign="top">
+				<table>
+					<tr><td>stuff</td>
+					</tr>
+					<tr><td>stuff</td></tr>
+					<tr><td>stuff</td></tr>
+				</table>
+			</td>
+			<td>
+				<div class="grouplist" style="background-color: red;">Group1<input type="checkbox"></div>
+				<div class="grouplist" style="background-color: green;">Group2</div>
+				<div class="grouplist" style="background-color: blue;">Group3</div>
+			</td>
+		</tr>
+	</tbody>
+</table>
+</form>

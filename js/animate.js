@@ -9,6 +9,7 @@ function is_array(input) {
 }
 
 function Animation(id, fr, delay) {
+    this.imgpath = "images/"
 	if (this.animation === 'undefined') {
 		this.animation = []
 	}
@@ -30,7 +31,7 @@ function Animation(id, fr, delay) {
 		} else {
 			a.curframe = 0;
 		}
-		this.content = '<img src="' + a.frames[a.curframe] + '" style="width:32px; height:32px;"/>';
+		this.content = '<img src="' + a.imgpath + a.frames[a.curframe] + '" style="width:32px; height:32px;"/>';
 		this.refresh();	
 	};
 	this.start = function(){

@@ -2,30 +2,30 @@
 // if not loaded jquery, just run the thing
 // 
 try {
-	$
+    $;
 } catch (ReferenceError){
-	window.$ = function(fn){
-		this.ready = function(fn){
-			fn();
-		}
-		return this;
-	};
+    window.$ = function(fn){
+        this.ready = function(fn){
+            fn();
+        };
+        return this;
+    };
 }
 
 var mouse;
 $(document).ready(function() {
-if (window && !window.input) {
-	console.log('window::', window);
-	window.input = new Input();
-}
+    if (window && !window.input) {
+        console.log('window::', window);
+        window.input = new Input();
+    }
 
-window.input.getInstance = function () {
-	if(!window.input) {
-		window.input = new Input();
-	}
-	return window.input;
-}
-console.log(window.input);
+    window.input.getInstance = function () {
+        if(!window.input) {
+            window.input = new Input();
+        }
+        return window.input;
+    };
+    console.log(window.input);
 });
 
 function Input() {
@@ -35,7 +35,7 @@ function Input() {
 
 	//
 
-	var selected, seme, game_running, IE;
+	var selected, seme, game_running, IE, command;
 	this.selected = "war1";
 	seme = "";
 
@@ -45,16 +45,16 @@ function Input() {
 
 
 	this.select = function () {
-		window.input.selected = this
-		this.selected = this
+		window.input.selected = this;
+       	this.selected = this;
 		console.log('imma selecting', this, window.input);
 		this.onselect();
 		return this.id;
-	}
+	};
 
 	this.setCommand = function (cmd) {
 		this.command = cmd;
-	}
+	};
 
 	/** Keydown
 	 * reaction to user input here...
@@ -85,8 +85,10 @@ function Input() {
 			case 40://down
 				move(selected, 0, speed);
 				break;
+            default:
+                break;
 		}
-	}
+	};
 
 	/** Keyup
 	 * reaction to user input here...
@@ -111,9 +113,11 @@ function Input() {
 		switch (code) { //works
 			case 40://down
 				break;
-
+            default: 
+                break;
 		}
-	}
+	};
+
 	this.initKeys = function () {
 		if (document.addEventListener) { //IE?
 			document.addEventListener("keydown", this.keydown, false);
@@ -131,7 +135,7 @@ function Input() {
 			document.onkeyup = this.keyup;
 			// document.ontextinput= textinput;
 		}
-	}
+	};
 
 	this.initMouse = function () {
 		// If NS -- that is, !IE -- then set up for mouse capture
@@ -141,7 +145,7 @@ function Input() {
 		document.onmousemove = this.getMouseXY;
 		document.onmousedown = this.getMouseDown;
 
-	}
+	};
 
 	this.getMouseXY = function (ev) {
 		mouse = ev;
@@ -154,14 +158,15 @@ function Input() {
 
 		}	
 
-	}
+	};
+
 	/**Mousedown **/
 	this.getMouseDown = function (ev){
 		mouse = ev;
-		var Input = window.input
+		var Input = window.input;
 		console.log(ev);
 		console.log(Input.command);
-		if (ev.which===1 && Input.command != null) {
+		if (ev.which===1 && Input.command !== null) {
 			//setTimeout(Input.command,0);
 			console.log('command: ', Input.command);
 			Input.command();
@@ -170,7 +175,7 @@ function Input() {
 		} 
 		//if (ev.which===2) {
 		//};
-	}
+	};
 
 	/*function isdefined(variable) {
 	  return (typeof (window[variable]) === "undefined") ?  false : true;

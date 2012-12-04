@@ -14,6 +14,7 @@ function Widget(id) {
 		this.add(stuff);
 		this.add('</' + tag + '>');
 	};
+
 	this.text = function () {
 		var stuff, out, i;
 		stuff = null;
@@ -31,7 +32,7 @@ function Widget(id) {
 				}
 			}
 		}
-		return out!=null ? out : ""; 
+		return out !== null ? out : ""; 
 			
 		
 	};

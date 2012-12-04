@@ -31,6 +31,7 @@ class MyHTTPRequestHandler(socketserver.BaseRequestHandler):
                     try:
                         reply = f.read()
                     except UnicodeDecodeError as e:
+                        # serve binary file
                         f.close()
                         f = open(''.join([self.path, file_req]), 'rb')
                         reply=f.read()
