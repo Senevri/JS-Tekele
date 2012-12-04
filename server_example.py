@@ -4,8 +4,9 @@
 
 import socketserver
 
-class MyTCPHandler(socketserver.BaseRequestHandler):
-    path = '/home/esa/tekele/JS-Tekele'
+class MyHTTPRequestHandler(socketserver.BaseRequestHandler):
+    #path = '/home/esa/tekele/JS-Tekele'
+    path = 'e:\\dev\\tekele\\js-tekele'
     buffer = []
 
     header = "HTTP/1.1 200 OK\r\nConnection: close\r\n \
@@ -24,7 +25,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                 if cmd.upper() == 'GET':
                     file_req = param.split(' ', 1)[0]
                     if file_req == '/':
-                        file_req = '/index.html'
+                        file_req = '\\index.html'
                     print(file_req)
                     f = open(''.join([self.path, file_req]), 'r')
                     try:
@@ -56,7 +57,7 @@ if __name__ == "__main__":
     HOST, PORT = "localhost", 9999
 
     # Create the server, binding to localhost on port 9999
-    server = socketserver.TCPServer((HOST, PORT), MyTCPHandler)
+    server = socketserver.TCPServer((HOST, PORT), MyHTTPRequestHandler)
 
     # Activate the server; this will keep running until you
     # interrupt the program with Ctrl-C
