@@ -39,9 +39,7 @@ $(function() {
 			$(window).unbind('keypress');
 			$(window).keypress(function(event) {
 				Input._keybuffer.push(event.keyCode);			
-				console.log(String.fromCharCode(event.keyCode));
 				if (event.keyCode === 13) {
-					console.log (Input.KeyBuffer.toString());
 				}
 				if ('keypress' in Input.Handlers) {
 					Input.Handlers.keypress(event);
@@ -58,7 +56,6 @@ $(function() {
 			for(var i in Input.Handlers) {
 				if ('keypress' !== i) {
 					$('window').unbind('i');
-					console.log(i);
 					$(window).bind(i, Input.Handlers[i]);
 				}
 				

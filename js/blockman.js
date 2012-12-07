@@ -120,6 +120,30 @@ $(function () {
         
         onHeartBeat: function(callback) {
         	Game._heartbeat_queue.push(callback);
+        },
+        
+        checkBoxCollision: function(box1, box2) {
+        	var out = {};
+        	if (box1.x < box2.x + box2.width && box1.x+box1.width > box2.x) {
+        		if (box1.y <= box2.y+box2.height && box1.y+box1.height > box2.y+box2.height) {
+					out.y = box1.y; // y collision;
+				}
+				if (box2.y+box2.y.height > box1.y+box1.y.height  & box2.y < box1.y + box1.height) {
+					out.y = box1.y + box1.height
+				}
+			}
+			
+			if (box1.y < box2.y && box1.y+box1.height >= box2.y+box2.height) {
+				if (box2.x <= box1.x+box1.width && box1.x <= box2.x+box2.width) {
+					out.x = box1.x;
+					if (box1.x+box1.width <= box2.x && box2.x+box2.width <= box1.x+box1.width+box2.width) {
+						out.x = box1.x + box1.width;
+					}	
+					
+				} 
+			}
+			
+			return out;
         }
     }
 	
@@ -160,8 +184,20 @@ $(function () {
 		width: '2%',
 		height: '10%',
 		color: 'brown',
-		left: '50%',
+		left: '30%',
 		bottom: '5%'
+	});
+	
+	createTerrain('platform',
+	{
+		'position' : 'absolute',
+		'margin-left': 'auto', 
+		'margin-top': 'auto',
+		width: '20%',
+		height: '4%%',
+		color: 'green',
+		left: '50%',
+		bottom: '30%'
 	});
 	
 	
@@ -206,9 +242,15 @@ $(function () {
 	
 	Game._framerate = 30;
 	
+	Game.blockman.animating = false;
+	
 	//gravity
 	Game.onHeartBeat(function() {
-		var velocityX  = Game.blockman.velocityX;			
+		var velocityX  = Game.blockman.velocityX;
+		var velocityY  = Game.blockman.velocityY;
+		var collisionX = Game.blockman.collisionX;
+		var collisionY = Game.blockman.collisionY;
+					
 		var bw = Game.blockman.$container.width();
 		var bh = Game.blockman.$container.height();
 		
@@ -219,55 +261,106 @@ $(function () {
 		}*/
 			
 		var terrainY = 2000;	
+		var terrainX = 2000
 		// check for collision
 		Game.blockman.falling = true;
+		Game.blockman.collisionX = undefined;
+		Game.blockman.collisionY = undefined;
+		
 		for(var i in Terrain) {
 			var foo = function (terrain) {
 				var tt = terrain.offset().top;
 				var tl = terrain.offset().left;
 				var th = terrain.height();
 				var tw = terrain.width();
-				if (tl < ox+bw && tl+tw > ox && tt <= oy + bh ) {
-					Game.blockman.falling =false;
-					terrainY = tt	
-				} 	
+				var coords = Game.checkBoxCollision(
+					{x: tl, height: th, y: tt, width: tw}, 
+					{x: ox, height: bh, y: oy, width: bw });
+				if (undefined !== coords.y) {
+					Game.blockman.collisionY = coords.y;	
+				    if (coords.y < oy + bh) {
+						//console.log(coords.y, oy)
+						Game.blockman.falling =false;
+						terrainY = tt
+					}
+					console.log('collisionY', coords.y, oy, oy+bh, velocityY);
+					
+					Game.blockman.$container.animate({ 'top': (coords.y - bh) + "px" }, 1);	
+					velocityY =0;
+					return;
+				}
+				if (undefined !== coords.x) {
+					Game.blockman.collisionX = coords.x;
+					console.log('collisionX', coords.x, ox, ox+bw);
+					terrainX = tl;
+					velocityX = 0;
+					return;
+				}
 			}(Terrain[i]);
 		}
 		
 		
-		
+		var animationObject = {};
 		// if no bottom collision falla
+			
 		if (Game.blockman.falling) {
-			Game.blockman.velocityY = Game.blockman.velocityY - 1;
+			Game.blockman.velocityY = Game.blockman.velocityY - 3;
+		} else {
+			if (0 > Game.blockman.velocityY) {
+				Game.blockman.velocityY = 0;
+			} 
 		}
 
-		if (Game.blockman.velocityY > 0) { // animate jumping
-			Game.blockman.$container.animate({'top': '-='+Game.blockman.velocityY+'px'}, 1, function() {
-			});
-		} else { //animate falling
-			var distance = Math.abs(Game.blockman.velocityY);
+		
+		var distance = Math.abs(Game.blockman.velocityY);
+			
+		if (Game.blockman.velocityY > 0) { // animate jumpinga
+			
+			animationObject = {'top': '-='+distance+'px'}
+		} else if (Game.blockman.velocityY < 0) { //animate falling
 			var by = oy + bh;
 			var tt = terrainY;
-			if (tt-by < 50 ) {
+			if (tt-by < distance) {
 				distance = tt-by;
-			}						
+			} else if (tt-by < 0){
+				distance = 0;aa
+			}	
 			
-			Game.blockman.$container.animate({'top': '+='+distance+'px'}, 12);
-		}
+			console.log(distance);
+			animationObject = {'top': '+='+distance+'px'}
+		}		
 		
-		if (terrainY <= oy+bh  && Game.blockman.velocityY < 0) {
-			Game.blockman.velocityY = 0;
-		}
-		Game.blockman.falling = false;
-		
-		//if not r/l collision can move		
+		delete(animationObject.left);
 		
 		if (Game.blockman.velocityX > 0) {
-			Game.blockman.$container.animate({'left': '+='+velocityX+'px'}, 1, function() { });
+			animationObject['left'] = '+='+velocityX+'px';
 		}  else if (Game.blockman.velocityX < 0) {
-			Game.blockman.$container.animate({'left': '-='+Math.abs(velocityX)+'px'}, 1, function() {});
+			animationObject['left'] = '-='+Math.abs(velocityX)+'px';			
 		}
 		
+		
+		
+		if (!Game.blockman.animating) {
+			if (collisionX == undefined || collisionY == undefined) {
+				Game.blockman.animating = true;
+				Game.blockman.$container.animate(animationObject, 2, function() {
+					Game.blockman.animating = false;
+				});
+			} else {
+				console.log("collisions: ", collisionX - ox, collisionY -oy);
+				if (collisionY <= (oy) ) {
+					animationObject['top'] = '-='+Math.abs(collisionY-(oy+bh)-5)+'px';			
+				} else {
+					animationObject['top'] = '+='+(5+collisionY-oy+bh)+'px';					
+				}
+				Game.blockman.$container.animate(animationObject, 16, function() {
+					Game.blockman.animating = false;
+					Game.blockman.falling = false;
+					Game.blockman.velocityY = 0;
+				});
+			}
+		}
+				
 	});
 	
 	Input.BuildInput({Handlers: {
@@ -276,17 +369,23 @@ $(function () {
 			switch (event.keyCode) {
 				
 				case 87: {
-					if (Game.blockman.velocityY == 0) {
+					if (Game.blockman.velocityY == 0 && !Game.blockman.falling) {
 						Game.blockman.velocityY = 20;
 					}
 					break;
 				}
+				case 83: {
+					//Game.blockman.velocityY = -20;
+					break;
+				}
+				
 				case 65: {
-					Game.blockman.velocityX = -20;
+					Game.blockman.velocityX = -10;
 					break;ddaa
 				}
 				case 68: {
-					Game.blockman.velocityX = 20;
+					Game.blockman.
+					velocityX = 10;
 					break;
 				}
 				default:
@@ -300,8 +399,14 @@ $(function () {
 			switch (event.keyCode) {
 				
 				case 87: {
+					Game.blockman.velocityY = 0;
 					break;
 				}
+				case 83: {
+					//Game.blockman.velocityY = 0;
+					break;
+				}
+				
 				case 65: {
 					Game.blockman.velocityX = 0;
 					break;
