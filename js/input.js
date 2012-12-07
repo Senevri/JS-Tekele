@@ -12,23 +12,85 @@ try {
     };
 }
 
-var mouse;
-$(document).ready(function() {
-    if (window && !window.input) {
-        console.log('window::', window);
-        window.input = new Input();
-    }
 
-    window.input.getInstance = function () {
-        if(!window.input) {
-            window.input = new Input();
-        }
-        return window.input;
-    };
-    console.log(window.input);
+
+/**
+ * @author Esa
+ */
+
+$(function() {
+	var Input = {
+		_keybuffer: [],
+		
+		Handlers: {},
+		
+		_mouse: {},
+	
+		BuildInput: function (data) {
+			if (undefined != data) {
+				for(var i in data) {
+					Input[i] = data[i]; //overwrite defaults
+				}
+			}
+			
+			//initialize KeyBuffer helper
+			Input.KeyBuffer();
+			
+			$(window).unbind('keypress');
+			$(window).keypress(function(event) {
+				Input._keybuffer.push(event.keyCode);			
+				console.log(String.fromCharCode(event.keyCode));
+				if (event.keyCode === 13) {
+					console.log (Input.KeyBuffer.toString());
+				}
+				if ('keypress' in Input.Handlers) {
+					Input.Handlers.keypress(event);
+				}
+			});
+			
+			$(window).unbind('mousemove');
+			$(window).mousemove(function(event) {
+				Input._mouse.X  = event.pageX;
+				Input._mouse.Y  = event.pageY;
+				Input._mouse.Target = event.Target;
+			})
+			
+			for(var i in Input.Handlers) {
+				if ('keypress' !== i) {
+					$('window').unbind('i');
+					console.log(i);
+					$(window).bind(i, Input.Handlers[i]);
+				}
+				
+			}
+			
+			return Input;
+		},
+		
+		KeyBuffer: function () {
+			Input.KeyBuffer.toString = function () {
+				var out = "";
+				for(var i in Input._keybuffer) {
+					out += String.fromCharCode(Input._keybuffer[i]);
+				}
+				return out;
+			}
+			return Input._keybuffer 
+			},
+		
+	}
+
+	
+    if (window && !window.Input) {
+        console.log('window::', window);
+        window.Input = Input.BuildInput();
+    }
 });
 
-function Input() {
+
+
+
+function ___Input() {
 	/**
 	 * copypasta from tetris
 	 */
