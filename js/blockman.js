@@ -293,7 +293,7 @@ $(function () {
 					console.log('collisionY', coords.y, oy, dy, velocityY);
 					
 					if (Math.abs(dy > Math.abs(dx))) {
-						Game.blockman.$container.animate({ 'top': last_position.y + "em" }, 1);	
+						Game.blockman.$container.animate({ 'top': last_position.y+velocityY + "em" }, 1);	
 						velocityY =0;
 					}
 					Game.blockman.last_position = {x: ox, y: oy};
@@ -364,9 +364,11 @@ $(function () {
 			} else {
 				console.log("collisions: ", collisionX - ox, collisionY -oy);
 				if (collisionY <= (oy) ) {
-					animationObject['top'] = '-='+Math.abs(collisionY-(oy+bh)-5)+'em';			
+					animationObject['top'] = '-='+Math.abs(collisionY-(velocityY))+'em';			
+					console.log('a');
 				} else {
-					animationObject['top'] = '+='+(5+collisionY-oy+bh)+'em';					
+					animationObject['top'] = '+='+(collisionY - velocityY)+'em';
+					console.log('b');					
 				}
 				Game.blockman.$container.animate(animationObject, 16, function() {
 					Game.blockman.animating = false;
