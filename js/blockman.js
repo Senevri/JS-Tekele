@@ -128,19 +128,19 @@ $(function () {
         		if (box1.y <= box2.y+box2.height && box1.y+box1.height > box2.y+box2.height) {
 					out.y = box1.y; // y collision;
 				}
-				if (box2.y+box2.y.height > box1.y+box1.y.height  & box2.y < box1.y + box1.height) {
+				if (box2.y+box2.height > box1.y+box1.height  & box2.y < box1.y + box1.height) {
 					out.y = box1.y + box1.height
 				}
 			}
 			
-			if (box1.y < box2.y && box1.y+box1.height >= box2.y+box2.height) {
-				if (box2.x <= box1.x+box1.width && box1.x <= box2.x+box2.width) {
+			if (box2.y < box1.y && box2.y+box2.height >= box1.y) {
+				if (box1.x <= box2.x+box2.width && box2.x >= box1.x-box2.width) {
 					out.x = box1.x;
-					if (box1.x+box1.width <= box2.x && box2.x+box2.width <= box1.x+box1.width+box2.width) {
-						out.x = box1.x + box1.width;
-					}	
-					
-				} 
+				}
+				if (box2.x+box2.width <= box1.x + box1.width && box1.x+box1.width <= box2.x) {
+					out.x = box2.x + box2.width;
+				}			
+			
 			}
 			
 			return out;
@@ -171,7 +171,7 @@ $(function () {
 		'margin-left': 'auto', 
 		'margin-top': 'auto',
 		width: '100%',
-		height: '5%',
+		height: '3em',
 		color: 'brown',
 		bottom: '0px'
 	});
@@ -182,10 +182,10 @@ $(function () {
 		'margin-left': 'auto', 
 		'margin-top': 'auto',
 		width: '2%',
-		height: '10%',
+		height: '5em',
 		color: 'brown',
 		left: '30%',
-		bottom: '5%'
+		bottom: '3em'
 	});
 	
 	createTerrain('platform',
@@ -194,10 +194,10 @@ $(function () {
 		'margin-left': 'auto', 
 		'margin-top': 'auto',
 		width: '20%',
-		height: '4%%',
+		height: '2em',
 		color: 'green',
 		left: '50%',
-		bottom: '30%'
+		bottom: '10em'
 	});
 	
 	
@@ -223,8 +223,7 @@ $(function () {
 			var $blockman = $('<img src="images/blockman.png"/>');
 			$blockman.css({
 				position: 'fixed',
-				'max-width': '1%',
-				width: '1%', 
+				width: '2em', 
 				height: 'auto',
 				top: '3em',
 				left: '3em'
@@ -273,6 +272,14 @@ $(function () {
 				var tl = terrain.offset().left;
 				var th = terrain.height();
 				var tw = terrain.width();
+				var dx = 0,  dy=0;
+				if (undefined !== Game.blockman.last_position) {
+					var last_position = Game.blockman.last_position;
+					dx = last_position.x - ox;
+					dy = last_position.y - oy;
+					console.log(last_position);
+				}
+				
 				var coords = Game.checkBoxCollision(
 					{x: tl, height: th, y: tt, width: tw}, 
 					{x: ox, height: bh, y: oy, width: bw });
@@ -283,17 +290,25 @@ $(function () {
 						Game.blockman.falling =false;
 						terrainY = tt
 					}
-					console.log('collisionY', coords.y, oy, oy+bh, velocityY);
+					console.log('collisionY', coords.y, oy, dy, velocityY);
 					
-					Game.blockman.$container.animate({ 'top': (coords.y - bh) + "px" }, 1);	
-					velocityY =0;
+					if (Math.abs(dy > Math.abs(dx))) {
+						Game.blockman.$container.animate({ 'top': last_position.y + "em" }, 1);	
+						velocityY =0;
+					}
+					Game.blockman.last_position = {x: ox, y: oy};
 					return;
 				}
 				if (undefined !== coords.x) {
 					Game.blockman.collisionX = coords.x;
 					console.log('collisionX', coords.x, ox, ox+bw);
+					if (Math.abs(dx > Math.abs(dy))) {
+						Game.blockman.$container.animate({ 'left': last_position.x + "em" }, 1);	
+						velocityY =0;
+					}
 					terrainX = tl;
 					velocityX = 0;
+					Game.blockman.last_position = {x: ox, y: oy};
 					return;
 				}
 			}(Terrain[i]);
@@ -304,7 +319,7 @@ $(function () {
 		// if no bottom collision falla
 			
 		if (Game.blockman.falling) {
-			Game.blockman.velocityY = Game.blockman.velocityY - 3;
+			Game.blockman.velocityY = Game.blockman.velocityY - 0.1;
 		} else {
 			if (0 > Game.blockman.velocityY) {
 				Game.blockman.velocityY = 0;
@@ -316,26 +331,26 @@ $(function () {
 			
 		if (Game.blockman.velocityY > 0) { // animate jumpinga
 			
-			animationObject = {'top': '-='+distance+'px'}
+			animationObject = {'top': '-='+distance+'em'}
 		} else if (Game.blockman.velocityY < 0) { //animate falling
 			var by = oy + bh;
 			var tt = terrainY;
 			if (tt-by < distance) {
 				distance = tt-by;
-			} else if (tt-by < 0){
+			} else if (tt-by < 0){a
 				distance = 0;aa
 			}	
 			
 			console.log(distance);
-			animationObject = {'top': '+='+distance+'px'}
+			animationObject = {'top': '+='+distance+'em'}
 		}		
 		
 		delete(animationObject.left);
 		
 		if (Game.blockman.velocityX > 0) {
-			animationObject['left'] = '+='+velocityX+'px';
+			animationObject['left'] = '+='+velocityX+'em';
 		}  else if (Game.blockman.velocityX < 0) {
-			animationObject['left'] = '-='+Math.abs(velocityX)+'px';			
+			animationObject['left'] = '-='+Math.abs(velocityX)+'em';			
 		}
 		
 		
@@ -349,9 +364,9 @@ $(function () {
 			} else {
 				console.log("collisions: ", collisionX - ox, collisionY -oy);
 				if (collisionY <= (oy) ) {
-					animationObject['top'] = '-='+Math.abs(collisionY-(oy+bh)-5)+'px';			
+					animationObject['top'] = '-='+Math.abs(collisionY-(oy+bh)-5)+'em';			
 				} else {
-					animationObject['top'] = '+='+(5+collisionY-oy+bh)+'px';					
+					animationObject['top'] = '+='+(5+collisionY-oy+bh)+'em';					
 				}
 				Game.blockman.$container.animate(animationObject, 16, function() {
 					Game.blockman.animating = false;
@@ -360,6 +375,7 @@ $(function () {
 				});
 			}
 		}
+		Game.blockman.last_position = { x: Game.blockman.$container.offset().x, y: Game.blockman.$container.offset().y}
 				
 	});
 	
@@ -370,7 +386,7 @@ $(function () {
 				
 				case 87: {
 					if (Game.blockman.velocityY == 0 && !Game.blockman.falling) {
-						Game.blockman.velocityY = 20;
+						Game.blockman.velocityY = 2;
 					}
 					break;
 				}
@@ -380,12 +396,12 @@ $(function () {
 				}
 				
 				case 65: {
-					Game.blockman.velocityX = -10;
+					Game.blockman.velocityX = -1;
 					break;ddaa
 				}
 				case 68: {
 					Game.blockman.
-					velocityX = 10;
+					velocityX = 1;
 					break;
 				}
 				default:
