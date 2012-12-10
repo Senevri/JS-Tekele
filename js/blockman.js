@@ -126,12 +126,12 @@ $(function () {
         checkBoxCollision: function(box1, box2) {       
         	var out = { x: undefined, y: undefined};
         	// if left side of 1 is inside right side of 2 and left side of 2 is inside right side of 1.
-        	if (box1.x < box2.x + box2.width && box1.x+box1.width > box2.x) {
+        	if (box1.x < box2.x + box2.width && box1.x+box1.width > box2.x) {        		
         		if (box1.y <= box2.y+box2.height && box1.y+box1.height >= box2.y) {
         			if (box1.y > box2.y){
-        				out.y = box1.y-box2.height; // y bottom collision;	
+        				out.y = box1.y-box2.height; // y bottom collision;	        				
         			} else {
-        				out.y = box1.y + box1.height;
+        				out.y = box1.y + box1.height;        				
         			}
 					
 				}
@@ -147,21 +147,21 @@ $(function () {
 				}
 			}*/
 			
-			if (box1.y <= box2.y + box2.height && box1.y+box1.height >= box2.y) {
-        		if (box1.x < box2.x+box2.width && box1.x+box1.width > box2.x) {
-        			//console.log(box1, box2)
+			if (box1.y <= box2.y + box2.height && box1.y+box1.height >= box2.y) {				
+        		if (box1.x <= box2.x+box2.width && box1.x+box1.width >= box2.x) {        			
 					if (box2.x < box1.x) {
-						out.x = box1.x-box2.width; // y bottom collision;
+						out.x = box1.x-box2.width; // x left collision;
+						console.log('xlc')						
 					} else if (box2.x+box2.width > box1.x+box1.width) {
 						out.x = box1.x + box1.width
-					}
+						console.log('xrc')						
+					} else {
+						console.log('bug')
+					}					
 					
 					//(true == ((box1.x+box1.width) > box2.x)) ? console.log(true) : aslödkjf;
 					//console.log('a', box1.x+box1.width, box2.x);
-				} else if (box1.x < box2.x && box1.x+box1.width > box2.x) {
-					out.x = box1.x + box1.width
-					//console.log('b');
-				}
+				} 
 			}
 			
 			return out;
@@ -202,11 +202,11 @@ $(function () {
 		'position' : 'absolute',
 		'margin-left': 'auto', 
 		'margin-top': 'auto',
-		width: '40px',
+		width: '50px',
 		height: '100px',
 		color: 'brown',
 		left: '30%',
-		bottom: '120px'
+		bottom: '150px'
 	});
 	
 	createTerrain('platform',
@@ -215,7 +215,7 @@ $(function () {
 		'margin-left': 'auto', 
 		'margin-top': 'auto',
 		width: '20%',
-		height: '40px',
+		height: '160px',
 		color: 'green',
 		left: '50%',
 		bottom: '260px'
@@ -369,7 +369,7 @@ $(function () {
 			} else if (tt-by < 0){
 				distance = 0;
 			}	
-			
+			Game.blockman.falling = true;
 			//console.log(distance);
 			animationObject = {'top': '+='+distance+'px'}
 		}		
@@ -379,18 +379,42 @@ $(function () {
 		}  else if (Game.blockman.velocityX < 0) {
 			animationObject['left'] = '-='+Math.abs(velocityX)+'px';			
 		}
+				
 		
-		
-		//console.log(last_pos)
+		//console.log(last_pos)a
 		if (collisionX) {
-			if (!collisionY) {
+			if (velocityX !== 0 && !collisionY) {
 				animationObject['left'] = Game.blockman.collisionX+'px';
-			}						
+				//Game.blockman.velocityX = 0;
+			}
+			if (collisionY && velocityY != 0) {
+				//animationObject['left'] = Game.blockman.collisionX+'px';
+				//Game.blockman.velocityX = 0;
+				//velocityX = 0;
+				//animationObject['top'] =  Game.blockman.collisionY+'px';			
+				//Game.blockman.velocityY = 0;
+												
+			}					
 		}
-		else if (collisionY) {
+		else if (collisionY && velocityY !== 0) {			
 			animationObject['top'] =  Game.blockman.collisionY+'px';
-			Game.blockman.velocityY = 0;			
+			Game.blockman.velocityY = 0;
+			Game.blockman.falling = false;
 		}
+		
+		/*if (collisionY && oy < Game.blockman.collisionY && !collisionX) {
+			Game.blockman.falling = false;
+			Game.blockman.velocityY = 0;
+		}*/
+		
+		if (collisionX && collisionY && Game.blockman.falling) {
+			console.log('gba');
+			Game.blockman.falling = false;
+			Game.blockman.velocityY = 0;			
+			//animationObject['left'] = undefined;
+			//animationObject['top'] =  undefined;
+		} 
+		
 		if (!Game.blockman.animating) {
 			Game.blockman.animating = true;
 			Game.blockman.$container.animate(animationObject, 50,  function() {
