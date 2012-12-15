@@ -149,14 +149,16 @@ $(function () {
 			
 			if (box1.y <= box2.y + box2.height && box1.y+box1.height >= box2.y) {				
         		if (box1.x <= box2.x+box2.width && box1.x+box1.width >= box2.x) {        			
-					if (box2.x < box1.x) {
-						out.x = box1.x-box2.width; // x left collision;
-						console.log('xlc')						
-					} else if (box2.x+box2.width > box1.x+box1.width) {
-						out.x = box1.x + box1.width
-						console.log('xrc')						
+					if (box2.x <= box1.x) {
+						out.x = box1.x-box2.width; // x left collision
+						console.log('xlc');
+						} else if (box2.x+box2.width >= box1.x+box1.width) {
+							out.x = box1.x + box1.width
+						console.log('xrc');					
 					} else {
-						console.log('bug')
+						//no collision
+						out.x = undefined;
+						console.log('noc');
 					}					
 					
 					//(true == ((box1.x+box1.width) > box2.x)) ? console.log(true) : aslödkjf;
@@ -165,7 +167,21 @@ $(function () {
 			}
 			
 			return out;
+        }, 
+        
+        checkHVCollisionLine: function(box1, box2) {
+        	var out = { x: undefined, y: undefined};
+        	var yaxiscenter = box1.x + (box1.width/2);
+        	var xaxiscenter = box1.y + (box1.height/2);
+        	if (xaxiscenter > box2.y && xaxiscenter < box2.y+box2.height ) {
+        		out.x = xaxiscenter;
+        	}
+        	if (yaxiscenter > box2.x && yaxiscenter < box2.x+box2.width) {
+        		out.y = yaxiscenter;
+        	}        	
+        	return out;
         }
+        
     }
 	
 	var Terrain = {};
@@ -206,7 +222,7 @@ $(function () {
 		height: '100px',
 		color: 'brown',
 		left: '30%',
-		bottom: '150px'
+		bottom: '140px'
 	});
 	
 	createTerrain('platform',
@@ -220,7 +236,19 @@ $(function () {
 		left: '50%',
 		bottom: '260px'
 	});
-	
+
+	createTerrain('platform2',
+	{
+		'position' : 'absolute',
+		'margin-left': 'auto', 
+		'margin-top': 'auto',
+		width: '50px',
+		height: '100px',
+		color: 'green',
+		left: '20%',
+		bottom: '500px'
+	});
+		
 	
 	/*
 	createTerrain({
@@ -307,7 +335,9 @@ $(function () {
 			velocityY = Game.blockman.velocityY;
 		} 
 				
-		// check for no collision on our future position		
+		// check for no collision on our future position
+		var $debug = $('#debug');
+				
 		for(var i in Terrain) {		
 			var foo = function (terrain) {
 				var tt = terrain.offset().top;
@@ -318,9 +348,27 @@ $(function () {
 				var coords = Game.checkBoxCollision(
 					{x: tl, height: th, y: tt, width: tw}, 
 					{x: ox+velocityX, height: bh, y: oy-velocityY, width: bw });
+				var axiscoll = Game.checkHVCollisionLine(					 
+					{x: ox+velocityX, height: bh, y: oy-velocityY, width: bw },
+					{x: tl, height: th, y: tt, width: tw}					
+				);
+				if (axiscoll.x !== undefined || axiscoll.y !== undefined) {
+					console.log('axiscoll: x ' + axiscoll.x + ', y:' + axiscoll.y + '<br />');
+					
+				}
+				
+				if (undefined !== coords.y && undefined !== coords.x) {
+					if (undefined == axiscoll.y && undefined !== axiscoll.x) {						
+						coords.y = undefined;
+					}
+					if (undefined == axiscoll.x && undefined !== axiscoll.y){
+						coords.x = undefined;						
+					}										
+				} 
+				
 				if (undefined !== coords.y) {					
 					Game.blockman.collisionY = coords.y;
-					collisionY = true;
+					collisionY = true; 
 					//var falling = false;	
 				    if (coords.y < oy + bh) {
 						//console.log(coords.y, oy)
@@ -333,7 +381,8 @@ $(function () {
 				
 					collision =true;					
 				}
-				if (undefined !== coords.x) {
+				if (undefined !== coords.x && ox !== coords.x && ox+bh != coords.x && undefined == axiscoll) {
+					
 					collisionX = true;
 					Game.blockman.collisionX = coords.x;
 					//console.log('collisionX', coords.x, ox, ox+bw);
@@ -382,19 +431,20 @@ $(function () {
 				
 		
 		//console.log(last_pos)a
-		if (collisionX) {
-			if (velocityX !== 0 && !collisionY) {
+		if (collisionX) {			
+			
+			if (velocityX !== 0) {
 				animationObject['left'] = Game.blockman.collisionX+'px';
 				//Game.blockman.velocityX = 0;
 			}
 			if (collisionY && velocityY != 0) {
 				//animationObject['left'] = Game.blockman.collisionX+'px';
-				//Game.blockman.velocityX = 0;
-				//velocityX = 0;
+				Game.blockman.velocityX = 0;
+				velocityX = 0;
 				//animationObject['top'] =  Game.blockman.collisionY+'px';			
 				//Game.blockman.velocityY = 0;
 												
-			}					
+			}				
 		}
 		else if (collisionY && velocityY !== 0) {			
 			animationObject['top'] =  Game.blockman.collisionY+'px';
@@ -418,8 +468,7 @@ $(function () {
 		if (!Game.blockman.animating) {
 			Game.blockman.animating = true;
 			Game.blockman.$container.animate(animationObject, 50,  function() {
-				Game.blockman.animating = false;
-				
+				Game.blockman.animating = false;				
 			});
 			
 		} 						
