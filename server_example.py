@@ -9,8 +9,9 @@ if (platform.python_version_tuple()[0] == '2'):
 else:
     import socketserver
 
-class MyTCPHandler(socketserver.BaseRequestHandler):
-    path = '/home/esa/tekele/Trista/test'
+class MyHTTPRequestHandler(socketserver.BaseRequestHandler):
+    path = '/home/esa/tekele/JS-Tekele'
+    #path = 'e:\\dev\\tekele\\js-tekele'
     buffer = []
 
     header = "HTTP/1.1 200 OK\r\nConnection: close\r\n \
@@ -51,7 +52,6 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                             reply=f.read()
                             self.header = '\r\n'.join([self.header,
                                 'Content-Encoding: binary'])
-
                         finally:
                             f.close()
         except ValueError:
@@ -60,21 +60,22 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
         c_len = "Content-Length: {0}\r\n".format(len(reply))
         header = "HTTP/1.1 404 FAILED\r\n\r\n"
 
-        print (reply)
         if len(reply)>0:
             if type(reply) == str:
-                reply = '\r\n'.join([self.header, c_len, reply])
-                self.request.send(reply.encode())
+                try:
+                    str_reply = '\r\n'.join([self.header, c_len, reply])
+                    self.request.send(str_reply.encode())
+                except UnicodeDecodeError as e: 
+                    self.request.send(reply)
             else:
                 self.request.send(reply)
 
-        
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8000
 
     # Create the server, binding to localhost on port 9999
-    server = socketserver.TCPServer((HOST, PORT), MyTCPHandler)
+    server = socketserver.TCPServer((HOST, PORT), MyHTTPRequestHandler)
 
     # Activate the server; this will keep running until you
     # interrupt the program with Ctrl-C

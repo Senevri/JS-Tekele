@@ -12,23 +12,82 @@ try {
     };
 }
 
-var mouse;
-$(document).ready(function() {
-    if (window && !window.input) {
-        console.log('window::', window);
-        window.input = new Input();
-    }
 
-    window.input.getInstance = function () {
-        if(!window.input) {
-            window.input = new Input();
-        }
-        return window.input;
-    };
-    console.log(window.input);
+
+/**
+ * @author Esa
+ */
+
+$(function() {
+	var Input = {
+		_keybuffer: [],
+		
+		Handlers: {},
+		
+		_mouse: {},
+	
+		BuildInput: function (data) {
+			if (undefined != data) {
+				for(var i in data) {
+					Input[i] = data[i]; //overwrite defaults
+				}
+			}
+			
+			//initialize KeyBuffer helper
+			Input.KeyBuffer();
+			
+			$(window).unbind('keypress');
+			$(window).keypress(function(event) {
+				Input._keybuffer.push(event.keyCode);			
+				if (event.keyCode === 13) {
+				}
+				if ('keypress' in Input.Handlers) {
+					Input.Handlers.keypress(event);
+				}
+			});
+			
+			$(window).unbind('mousemove');
+			$(window).mousemove(function(event) {
+				Input._mouse.X  = event.pageX;
+				Input._mouse.Y  = event.pageY;
+				Input._mouse.Target = event.Target;
+			})
+			
+			for(var i in Input.Handlers) {
+				if ('keypress' !== i) {
+					$('window').unbind('i');
+					$(window).bind(i, Input.Handlers[i]);
+				}
+				
+			}
+			
+			return Input;
+		},
+		
+		KeyBuffer: function () {
+			Input.KeyBuffer.toString = function () {
+				var out = "";
+				for(var i in Input._keybuffer) {
+					out += String.fromCharCode(Input._keybuffer[i]);
+				}
+				return out;
+			}
+			return Input._keybuffer 
+			},
+		
+	}
+
+	
+    if (window && !window.Input) {
+        console.log('window::', window);
+        window.Input = Input.BuildInput();
+    }
 });
 
-function Input() {
+
+
+
+function OLD_Input() {
 	/**
 	 * copypasta from tetris
 	 */
@@ -36,7 +95,9 @@ function Input() {
 	//
 
 	var selected, seme, game_running, IE, command;
-	this.selected = "war1";
+	
+	self = Input;
+	self.selected = "war1";
 	seme = "";
 
 	game_running = true;
@@ -44,23 +105,23 @@ function Input() {
 	mouse = "";
 
 
-	this.select = function () {
+	self.select = function () {
 		window.input.selected = this;
-       	this.selected = this;
-		console.log('imma selecting', this, window.input);
-		this.onselect();
+       	self.selected = this;
+		console.log('imma selecting', this, window.Input);
+		self.onselect();
 		return this.id;
 	};
 
-	this.setCommand = function (cmd) {
-		this.command = cmd;
+	self.setCommand = function (cmd) {
+		self.command = cmd;
 	};
 
 	/** Keydown
 	 * reaction to user input here...
 	 * TODO: messaging
 	 */ 
-	this.keydown = function (e) {
+	self.keydown = function (e) {
 		debugClear();
 		debugWrite(selected);
 		/*    if(game_running==false){
@@ -94,8 +155,8 @@ function Input() {
 	 * reaction to user input here...
 	 *
 	 */
-	this.game_running = true;
-	this.keyup = function (e) {
+	self.game_running = true;
+	self.keyup = function (e) {
 		if (game_running === false) {
 			return;
 		}
@@ -118,36 +179,36 @@ function Input() {
 		}
 	};
 
-	this.initKeys = function () {
+	self.initKeys = function () {
 		if (document.addEventListener) { //IE?
-			document.addEventListener("keydown", this.keydown, false);
+			document.addEventListener("keydown", self.keydown, false);
 			//   document.addEventListener("keypress",keypress,false);
-			document.addEventListener("keyup", this.keyup, false);
+			document.addEventListener("keyup", self.keyup, false);
 			//   document.addEventListener("textinput",textinput,false);
 		} else if (document.attachEvent) { //Gecko?
-			document.attachEvent("onkeydown", this.keydown);
+			document.attachEvent("onkeydown", self.keydown);
 			//  document.attachEvent("onkeypress", keypress);
-			document.attachEvent("onkeyup", this.keyup);
+			document.attachEvent("onkeyup", self.keyup);
 			//  document.attachEvent("ontextinput", textinput);
 		} else {
-			document.onkeydown = this.keydown;
+			document.onkeydown = self.keydown;
 			// document.onkeypress= keypress;
-			document.onkeyup = this.keyup;
+			document.onkeyup = self.keyup;
 			// document.ontextinput= textinput;
 		}
 	};
 
-	this.initMouse = function () {
+	self.initMouse = function () {
 		// If NS -- that is, !IE -- then set up for mouse capture
 		if (!IE) { document.captureEvents(Event.MOUSEMOVE); }
 		//
 		// // Set-up to use getMouseXY function onMouseMove
-		document.onmousemove = this.getMouseXY;
-		document.onmousedown = this.getMouseDown;
+		document.onmousemove = self.getMouseXY;
+		document.onmousedown = self.getMouseDown;
 
 	};
 
-	this.getMouseXY = function (ev) {
+	self.getMouseXY = function (ev) {
 		mouse = ev;
 		if (IE) { // grab the x-y pos.s if browser is IE
 			mouse.X = event.clientX + document.body.scrollLeft;
@@ -161,22 +222,23 @@ function Input() {
 	};
 
 	/**Mousedown **/
-	this.getMouseDown = function (ev){
+	self.getMouseDown = function (ev){
 		mouse = ev;
 		var Input = window.input;
 		console.log(ev);
-		console.log(Input.command);
-		if (ev.which===1 && Input.command !== null) {
+		console.log(self.command);
+		if (ev.which===1 && this.command !== null) {
 			//setTimeout(Input.command,0);
-			console.log('command: ', Input.command);
-			Input.command();
-			Input.command=null;
+			console.log('command: ', this.command);
+			this.command();
+			this.command=null;
 			//debug.write(Input.command);
 		} 
 		//if (ev.which===2) {
 		//};
 	};
 
+	return self;
 	/*function isdefined(variable) {
 	  return (typeof (window[variable]) === "undefined") ?  false : true;
 
