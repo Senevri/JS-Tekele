@@ -1,3 +1,4 @@
+"use strict";
 function debugWrite(message) {
 	if (this.debugflag === true) {
 		var e = document.getElementById("debug");
@@ -12,7 +13,7 @@ function debugClear() {
 	document.getElementById("debug").innerHTML = "";
 }
 
-function debug() {
+function Debug() {
 	this.debugflag = true;
 	this.write = debugWrite;
 	this.clear = debugClear;
