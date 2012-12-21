@@ -6,7 +6,11 @@ if(!console) {
 	console.log = function(str){};
 }
 
-var input = window.input.getInstance(), xpos, ypos;
+ // init oldstuffs
+
+var input = OLD_Input(), xpos, ypos;
+
+
 
 if (!window.app) window.app = {};
 

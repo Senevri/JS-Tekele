@@ -1,0 +1,29 @@
+<html>
+	<head>
+		<!-- script src="jquery-1.6.2.js"></script -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+		<script src="js/debug.js"></script>
+		<style type="text/css" >
+			<!--
+			-->
+		</style>
+		<link rel="stylesheet" type="text/css" href="style.css" />
+	</head>	
+	<body>
+	<div id="main" style="main">
+	</div><div id="debug"></div>
+	<!--script src="dynfluid.js"></script-->
+	<script>
+		$(document).ready(function(){
+			// Fails in localhost
+			$.get('test.txt', function(data) {
+				console.log(data);
+				$('#main').append(data);	
+			})
+		});
+		
+	</script>
+	
+	</body>
+</html>
+
