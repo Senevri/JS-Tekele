@@ -1,7 +1,8 @@
+"use strict";
 $(document).ready(function() {
 
 if(!console) {
-	console = {};
+	var console = {};
 	console.log = function(str){};
 }
 
@@ -17,11 +18,12 @@ var select = input.select;
 var action = null; 
 window.creatures = [];
 var creatures = window.creatures;
-debug = new debug();
+var debug = new Debug();
 debug.write("debug:");
 
 var fetchCreature = (function (id) {
-	var i = 0;
+	var i = 0, 
+        c;
 	while (i<creatures.length){
 		c = creatures[i];
 		if (c.id === id ) {
@@ -59,16 +61,16 @@ var engineUpdate = function(){
 	if (sel) {
 		c = window.app.fetchCreature(sel);		
 		sel.style.backgroundColor='red'; 
-		//debug.write("dy: " + c.xspeed + c.yspeed); 		
+        //debug.write("dy: " + c.xspeed + c.yspeed); 
 	}
 	setTimeout(engineUpdate, 250);
-}
+};
 
 /* ajax can only test on actual server*/
 //testAjax();
 
-uno = new generateWar("uno");
-dos = new generateWar("dos");
+var uno = new GenerateWar("uno");
+var dos = new GenerateWar("dos");
 dos.stats={"hp": 12, "atk": 2, "def": 13};
 dos.move(3,0);
 //dos.gotox=288;
@@ -89,11 +91,10 @@ var test_two = (function (){
 //test_one();
 //test_two();
 
-function generateWar(id) {
-	war = new Widget(id); 
-	war.add(moveableTag(id, '', 8+6*32, 8+3*32))
+function GenerateWar(id) {
+	var war = new Widget(id); 
+	war.add(moveableTag(id, '', 8+6*32, 8+3*32));
 	war.drawTo('main');
-	var me=this;
 	this.widget = war;
 	this.id = this.widget.id;
 	//his.inheritfrom(id, '', 200, 100);
@@ -118,13 +119,13 @@ function generateWar(id) {
 	this.attackAction = attackAction;
 	this.animate = function (anima) {
 		if ('undefined' === anima) {
-			return
+			return;
 		}
 		console.log('animation: ', anima);
 		this.animation[this.anim].stop();
 		this.anim = anima;
 		this.animation[this.anim].start();
-	}
+	};
 
 	this.move = function (x, y) {
 		move(this.id, x*32, y*32);
@@ -132,7 +133,8 @@ function generateWar(id) {
 		this.y += y*32;
 		this.gotox = this.x;
 		this.gotoy = this.y;
-	}
+	};
+    
 	this.animate_move = function(){
 		var a = Math.abs;
 		var f = Math.floor;		
@@ -181,10 +183,10 @@ function generateWar(id) {
 	};
 	this.get_square = function(x, y){
 		var round = Math.round;
-		if (x==y && y==undefined) { 
+		if (x===y && y===undefined) { 
 			x = (this.x-8)/32;
 			y = (this.y-8)/32;
-		} else if (x == true && y == undefined) {
+		} else if (x === true && y === undefined) {
 			x = (this.gotox-8)/32;
 			y = (this.gotoy-8)/32;
 		} else {
@@ -197,7 +199,7 @@ function generateWar(id) {
 }
 
 function takeDamage (){
- 	var w, target, attacker, dam;
+    var w, target, attacker, dam;
 	attacker = window.app.fetchCreature(seme);
 	attacker.animate("idle");
 	attacker.onselect = showstats;
