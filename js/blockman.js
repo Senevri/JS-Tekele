@@ -127,7 +127,7 @@ $(function () {
         	var out = { x: undefined, y: undefined};
         	// if left side of 1 is inside right side of 2 and left side of 2 is inside right side of 1.
         	if (box1.x < box2.x + box2.width && box1.x+box1.width > box2.x) {        		
-        		if (box1.y <= box2.y+box2.height && box1.y+box1.height >= box2.y) {
+        		if (box1.y < box2.y+box2.height && box1.y+box1.height > box2.y) {
         			if (box1.y > box2.y){
         				out.y = box1.y-box2.height; // y bottom collision;	        				
         			} else {
@@ -147,9 +147,9 @@ $(function () {
 				}
 			}*/
 			
-			if (box1.y <= box2.y + box2.height && box1.y+box1.height >= box2.y) {				
-        		if (box1.x <= box2.x+box2.width && box1.x+box1.width >= box2.x) {        			
-					if (box2.x <= box1.x) {
+			if (box1.y < box2.y + box2.height && box1.y+box1.height > box2.y) {				
+        		if (box1.x < box2.x+box2.width && box1.x+box1.width > box2.x) {        			
+					if (box2.x < box1.x) {
 						out.x = box1.x-box2.width; // x left collision
 						console.log('xlc');
 						} else if (box2.x+box2.width >= box1.x+box1.width) {
@@ -175,7 +175,7 @@ $(function () {
         	var xaxiscenter = box1.y + (box1.height/2);
         	if (xaxiscenter > box2.y && xaxiscenter < box2.y+box2.height ) {
         		out.x = xaxiscenter;
-        	}
+        	}                	
         	if (yaxiscenter > box2.x && yaxiscenter < box2.x+box2.width) {
         		out.y = yaxiscenter;
         	}        	
@@ -326,7 +326,6 @@ $(function () {
 		// check for collision
 		Game.blockman.collisionX = undefined;
 		Game.blockman.collisionY = undefined;
-		//var last_position = Game.blockman.last_position;
 		var collision = false;
 		Game.blockman.falling = true;
 		
