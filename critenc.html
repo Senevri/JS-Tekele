@@ -129,10 +129,9 @@ function foo() {
 
 		}; //done?
 	*/
-	//start applying stat mods from race/class 
-	//FIXME switch to script storage, maybe.
+	//start applying stat mods from race/class
 	//var stats = {"ADA":"0", "DEX":"0","ESP":"0","INT":"0","LEA":"0","LUC":"0","MAG":"0","ROB":"0","STR":"0"};
-	//var racial_mods = { "Amazon" : {"stats":[], "abilities":{} } };	
+	//var racial_mods = { "Amazon" : {"stats":[], "abilities":{} } };
 	var racial_mods = { 
 			"Amazon": { "stats":[0, 1, 0, 0, 1, 0,-2,-3, 2  ], "abilities":{ "Camping": 10, "Seduce": 10} },
 			"Dwarf":{"stats":[0,0,0,0,0,-1,-2,0,2], "abilities":{"Saving Throw":10}},
@@ -162,7 +161,7 @@ function foo() {
 		}
 	};
 
-	//get stat-based ability bonuses FIXME switch to hTables.
+	//get stat-based ability bonuses
 	for (s in stats){	
 		var tname = 'script#'+s+'-table';
 		var table = $(tname).html();
@@ -179,7 +178,6 @@ function foo() {
 			}
 		}
 	}
-
 	var readTable = function (tablename, index){
 		var table = $(tablename).html();
 		if (null!==table) {
