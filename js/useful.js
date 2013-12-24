@@ -60,6 +60,12 @@ $(document).ready(function () {
                 window.setTimeout(callback, 1000 / 60);
               };
     })();
+    
+    if (!event.preventDefault) {
+        event.preventDefault = function() {
+            event.returnValue = false; //Internet Explorer
+        };
+    }
  
  
     // usage: 

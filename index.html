@@ -1,27 +1,73 @@
-<html>
-	<head>
-		<script src="jquery-1.6.2.js"></script>
-		<script src="debug.js"></script>
-		<script src="mpi.js"></script>
-		<script src="input.js"></script>
-		<script src="graphics.js"></script>	
-		<script src="animate.js"></script>
-		<script src="widget.js"></script>
-		<script src="ajax-jquery.js"></script>
-		<style type="text/css" >
-			<!--
-			-->
-		</style>
-		<link rel="stylesheet" type="text/css" href="style.css" />
-	</head>	
-	<body>
-	<div id="main" style="main">
-		<div id="menu" onClick='' ></div>
-		<div id="stats" onClick='' ></div>
-	</div><div id="debug"></div>
-	<!--script src="dynfluid.js"></script-->
-	<script src="program.js"></script>
+<!doctype HTML>
+<head>
+<meta charset="utf-8">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" type=text/javascript></script>
+<script src="js/useful.js" type="text/javascript"></script>
+<style type="text/css">
+	h1 {display: inline; padding: 4px;}
+	div.inline {display:inline;}
+</style>
+</head>
+ 
+<!-- basic view description -->
+<body>
+<div id="controls" class="inline">controls fail</div>
+<div id="main" class="inline">Javascript fail</div>
+</body>
+ 
+<!-- Scripts start here -->
+<script type="text/javascript">
+document.current = 0; 
+document.next = 1;
+document.prev = 0;
+ 
+$(document).ready(function (){
+	var pages = [$("script#page1").html(), 
+			$("script#page2").html(), 
+			$("script#page3").html()];
 	
-	</body>
-</html>
-
+	$("div#controls").html($('script#controls').html());
+	
+	/*
+	temp_color = function(style)	{
+		_style = $("h1").css("color")
+		$h1.style(style)
+		
+		
+	}*/
+	
+	var enable_next_and_prev = (function () {
+		$("h1#next").click(function () {
+			if (document.current == pages.length-1) { document.next=0; };
+			$("div#main").html( pages[document.next] );
+			document.current = document.next; 
+			document.next += 1;
+		});
+		$("h1#prev").click(function () {
+			if (document.current === 0) { document.prev=pages.length-1; };
+			$("div#main").html( pages[document.prev] );
+			document.current = document.prev; 
+			document.prev -= 1;
+		});
+	})();		
+	$("div#main").html( pages[document.current] );
+	
+});
+</script>
+ 
+<script id="page1" type="text/html">
+this is page 1
+</script>
+ 
+<script id="page2" type="text/html">
+this is page 2
+</script>
+ 
+<script id="page3" type="text/html">
+this is page 3
+</script>
+ 
+<script id="controls" type="text/html">
+<h1 id="prev">&lt;</h1>
+<h1 id="next">&gt;</h1>
+</script>
