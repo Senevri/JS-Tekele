@@ -26,19 +26,22 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
                     if file_req == '/':
                         file_req = '/index.html'
                     print(file_req)
-                    f = open(''.join([self.path, file_req]), 'r')
                     try:
-                        reply = f.read()
-                    except UnicodeDecodeError as e:
-                        # serve binary file
-                        f.close()
-                        f = open(''.join([self.path, file_req]), 'rb')
-                        reply=f.read()
-                        self.header = '\r\n'.join([self.header, 
-                            'Content-Encoding: binary'])
+                        f = open(''.join([self.path, file_req]), 'r')
+                        try:
+                            reply = f.read()
+                        except UnicodeDecodeError as e:
+                            # serve binary file
+                            f.close()
+                            f = open(''.join([self.path, file_req]), 'rb')
+                            reply=f.read()
+                            self.header = '\r\n'.join([self.header, 
+                                'Content-Encoding: binary'])
 
-                    finally:
-                        f.close()
+                        finally:
+                            f.close()
+                    except FileNotFoundError as e:
+                        print ("File not found: {0}".format(file_req))
         except ValueError:
             print (strbytes)
 
