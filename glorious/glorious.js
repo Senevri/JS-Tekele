@@ -36,17 +36,21 @@
 	ctx.fillStyle="#000000";
 	ctx.imageSmoothingEnabled = true;
 
+    var get_ftype_string = function (entry) {
+        return entry.substring(entry.length-3);
+    }
 /* preload resources */
 	var resources = {gfx: {}, sfx: {}}
 	var res_strings = [
 		"test.png",
 		"fanta_in_space.mp3"
 	].forEach(function(entry){
-		switch(entry.substring(entry.length-3)) {
+            switch(get_ftype_string(entry)) {
 			case "png":
 				/* if image is loaded, complete=true*/
 				resources.gfx[entry] = new Image();
 				resources.gfx[entry].src = "../assets/".concat(entry);
+                resources.gfx[entry].filename = entry.substring(0, entry.length-4);
 			break;
 			case "mp3":
 				resources.sfx[entry] = new Audio();
@@ -66,7 +70,7 @@
     };
 	
 	console.log(resources);
-	var x=0, y=0;
+	var motion = { x:0, y:0 };
 	for (var key in resources.gfx) {
 		console.log(key);
 		if (resources.gfx.hasOwnProperty(key)) {
@@ -74,18 +78,46 @@
 			//resources.gfx[key].clientTop = y;
 			resources.gfx[key].onload = function(foo){
 				var self=resources.gfx[key];
-				ctx.drawImage(self, self.clientLeft, self.clientTop, 128 , 128);	  				
+                switch (self.name) {
+                    default:
+                }
+                        ctx.drawImage(self, self.clientLeft, self.clientTop, 128 , 128);	  				
 			}
-			x = ((x+128)>dom.canvas.width) ? 0: x + 128;
+			//x = ((x+128)>dom.canvas.width) ? 0: x + 128;
 		}
 	}
+
+    document.addEventListener('keydown', function(event) {
+        switch (event.key) {
+            case "w":
+                motion.y -= 100;
+                break;
+            case "a":
+                motion.x -= 100; 
+                break;
+            case "s":
+                motion.y += 100; 
+                break;
+            case "d":
+                motion.x += 100; 
+                break;
+            default:
+                console.log(event.keyCode, event.key);
+            }
+    });
+
+    var fps = 60
 		
 	var heartbeat = window.setInterval(function (){
 			/*start heartbeat*/
-			dom.text.nodeValue= "Hellotime, seconds ".concat(foo);		
+			dom.text.nodeValue= "Hellotime, seconds ".concat(foo*fps/1000);		
+            var player = resources.gfx["test.png"];
+            ctx.clearRect(0, 0, dom.canvas.width, dom.canvas.height);
+            ctx.drawImage(player, player.clientLeft + motion.x, player.clientTop + motion.y, 100, 100);
+
 			/*end heartbeat*/				
 			foo++;
-	}, 1000);
+	}, 1000/fps);
 	//resources.sfx.test.volume = 0.5;
 	//resources.sfx.test.play();
 	//resources.sfx.test.currentTime=120;
