@@ -1,0 +1,429 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+<style type="text/css">
+body {
+	background: gray;
+}
+
+div {
+	display: block;
+	background: lightgray;
+}
+
+div.panel {
+	display:inline-block;
+	float:left;
+	width: 32%;
+	min-height: 50%;
+	padding: 4px;
+}
+
+#input {
+	width: 100%;
+}
+
+#output {
+	white-space: pre;
+	clear:both;	
+	display: block;
+	width: 100%;
+	padding: 4px; 
+	min-height: 200px;
+}
+
+textarea {
+	width: 100%;
+	height: 100%;
+	min-height: 300px;
+}
+.hidden {
+	visibility: hidden;	
+}
+
+</style>
+<title>Generoi CSV Automalliluettelo Ilman Vuosia</title>
+</head>
+<body>
+<div id="input">
+	<form>
+		<div class="panel">
+			<label>Make:</label>			
+			<textarea class="" id="make"></textarea>			
+			<input type="button" id="toggle_make" value="Edit"></input>
+		</div>
+		<div class="panel" >
+			<label id="chosen_make" value="">Models for:</label>
+			<select id="select_make"></select>			
+			<textarea id="model"></textarea>
+			<input type="button" id="toggle_model" value="Edit"></input>
+		</div>			
+		<div class="panel" >
+			<label id="chosen_model" value="">Engine for:</label>			
+			<select id="select_model"></select>
+			<textarea id="engine"></textarea>
+			<input type="button" id="toggle_engine" value="Edit"></input>
+		</div>
+		<input type="hidden" name="clipboard" id="clipboard" />
+	</form>
+</div>
+<div>
+<textarea id="output"></textarea>
+</div>
+</body>
+<script type="text/javascript">
+</script>
+<script type="text/javascript">
+"use strict";
+
+$(document).ready(function () {
+    //console.log("Document Ready");
+	
+	var selected = { "make": undefined, "model" : undefined };
+	// Check for cookie	
+	var cookie_name = "esakarjalainen_carTable";
+	var cookie = Cookies.get(cookie_name);	
+	var carTable = [];
+	/*r jsonCookie = Cookies.get('json');
+	if (jsonCookie) {
+		carTable = jsonCookie;
+	}*/
+	
+	var flipEdit = function (area) {
+		//console.log(area);
+		$("#".concat(area)).toggle();
+	}
+	
+	var updateSelectWithTable = function (select_id, table) {
+		var select = $("#".concat(select_id));
+		select.empty();
+		for(var item in table) {			
+			select.append("<option value=\"item\">item</option>".replace(/item/g, item));			
+		}
+	}
+	
+	var deserializeCSV = function (csv) {
+	
+		var rows = csv.split("\n");		
+		var table = []
+		/*
+		rows.forEach(function(item) {			
+			var car = item.split(";")[0];
+			cars.push(car);
+		});				
+		
+		var unique = cars.filter(function(elem, index, self) {
+			return index == self.indexOf(elem);
+		});
+		
+		console.log(unique);
+		
+		unique.forEach(function(item) {
+			table[item] = [];			
+		});
+		*/
+		//console.log("deserializing...");
+		rows.forEach(function(row) {			
+			var item = row.split(";");
+			//final semicolon means there's one extra item.
+			//console.log(item);
+			item.forEach(function(str, index) {
+				if (str.charAt(0) === '"' && str.charAt(str.length -1) === '"')
+				{
+					item[index] = str.substr(1,str.length -2);
+				}
+			});
+			if (!$.isArray(table[item[0]])) {
+				table[item[0]] = [];
+			}
+			try { 
+				console.log("item.length: ", item.length);
+				switch (item.length) {
+					case 1:						
+						break;
+					case 2:					
+						table[item[0]][item[1]] = [];
+						break;
+					case 3:
+						if (!$.isArray(table[item[0]][item[1]])) {
+							table[item[0]][item[1]] = [];
+						}
+						table[item[0]][item[1]].push(item[2]);
+						break;
+					default: 
+						console.log(item, table);
+						throw "Unhandled item length";
+				}
+			}
+			catch (err) {
+				//excepting exception with unfinished rows.
+				console.log (err);
+			}
+		});
+		
+		//$("#make").val(unique.join("\n"));
+		//car list, first car's models, first model's engines
+		try {
+		$("#make").val(Object.keys(table).join("\n"));
+		selected.make = Object.keys(table)[0];
+		updateSelectWithTable("select_make", table);
+		selected.model = Object.keys(table[selected.make])[0];
+		updateSelectWithTable("select_model", table[selected.make]);
+		$("#model").val(Object.keys(table[selected.make]).join("\n"));		
+		if (!$.isArray(table[selected.make][selected.model])) {
+			table[selected.make][selected.model] = [];
+		}
+		$("#engine").val(table[selected.make][selected.model].join("\n"));
+		} 
+		catch (err) {
+			console.log("Error filling make-model-engine from cookie:", err);
+		}
+		return table;
+	}	
+	
+	
+	
+	if (cookie){
+		//console.log(cookie);
+		//carTable = JSON.parse(cookie);				
+		var out_str = decodeURIComponent(cookie);
+		carTable = deserializeCSV(out_str);			
+		$("#output").val(out_str);
+		//$("#output").html(out_str);
+	}
+	
+	/*if (undefined !== jsonCookie) {
+		carTable = jsonCookie;
+	}*/
+
+// This is kinda useless
+	//create toggle buttons for panels
+	var panels = ['make', 'model', 'engine']
+	panels.forEach(function(item) {
+		$("#toggle_".concat(item)).click(function() {
+			flipEdit(item); 		
+		});
+	});	
+	
+	var safeUpdateTable = function (newKeys, table) {
+	// do not nuke existing data. 
+		var newTable = [];
+		newKeys.forEach(function(key) {
+			key = key.trim();
+			newTable[key] = [];
+			if (key in table) {
+				newTable[key] = table[key];
+			}			
+		});
+		return newTable;	
+	}
+	
+	
+		
+	var updateOutput = function (table) {
+		console.log("updateOutput fires");
+		$("#output").val("");
+		
+		var out_line = "";
+		//console.log("updateOutput", table);
+				
+		for (var make in table) {
+			//console.log("make:", make);
+			var models = table[make];
+			if ($.isArray(models)) {
+				if (models.length < 1) {
+					//unfinished table
+					if ("" !== make) {
+						//console.log(make);
+						out_line = out_line.concat('"', make.trim(),'"', ";\n");
+					}
+				}				
+				for (var model in models) {				
+					if(model !== "") {
+					//console.log("\tmodel:", model);
+						var engines = models[model];
+						//console.log(engines);						
+						if ($.isArray(engines)) {
+							if (engines.length === 0) {					
+								out_line = out_line.concat('"',make.trim(),'"', ";", '"',model.trim(),'"', ";\n");
+							}
+							
+							engines.forEach(function(engine) {					
+								if("" !== engine) {
+									//console.log("\t\tengine:", engine);							
+									out_line = out_line.concat('"',make.trim(),'"', ";", '"', model.trim(), '"', ";", '"', engine.trim(), '"', "\n");							
+								}
+							});
+						} else {
+							console.log("engines not array");
+						}
+					} 
+				}
+			} else {
+				console.log("models not array");
+			}
+		}
+		$("#output").html(out_line).val(out_line);
+		$("#clipboard").val(out_line).text(out_line).html(out_line);				
+		//Cookies.remove(cookie_name);		
+		Cookies.set(cookie_name, encodeURIComponent(out_line), { expires: 7 });
+		Cookies.set('json', carTable);
+	};
+	
+	var updatePanel = function (panel, table) {
+		var out_str = "";
+		if (Array.isArray(table[Object.keys(table)[0]])) {
+			console.log("table");
+			for (var item in table) {
+				out_str += item + "\n";	
+			}						
+		} else {
+			console.log("not table");
+			table.forEach(function(item, index) {
+				//console.log(item);
+				out_str += item + "\n";
+			});
+		}
+		
+		//console.log(panel, out_str, table);
+			//console.log("full out_str", out_str);
+			$("#" + panel).val(out_str);
+			$("#" + panel).html(out_str);					
+	}
+
+	$("#make").bind('input propertychange', function () {
+		// clear cartable because Make is "constant"
+		// This is somewhat NG, as we lose all the added followups.
+		//carTable = [];
+		var newKeys = $("#make").val().split("\n");
+		carTable = safeUpdateTable(newKeys, carTable);
+		
+		selected.make = Object.keys(carTable)[0];
+		updatePanel("model", carTable[selected.make]);
+		updateSelectWithTable("select_make", carTable);
+		//console.log(select.html());
+
+		updateOutput(carTable);
+	});
+	
+	$("#model").bind('input propertychange', function () {
+		//var make = $("#chosen_make").val();
+		var make = selected.make;
+		if (make in carTable) {			
+			//carTable[make] = [];
+			var models = $("#model").val().split("\n");		
+			carTable[make] = safeUpdateTable(models, carTable[make]);			
+		} else {
+			console.log("car not in cartable!", carTable);			
+		}
+		selected.model = Object.keys(carTable[make])[0];
+		updatePanel("engine", carTable[selected.make][selected.model]);
+		updateSelectWithTable("select_model", carTable[make]);
+		updateOutput(carTable);
+		//following line is doing something manually out of frustration.
+		Cookies.set(cookie_name, $("#output").val());
+	});
+	
+	$("#engine").bind('input propertychange', function () {
+		//$("#engine").val($("#engine").val().trim());
+		var make = selected.make;
+		var model = selected.model;
+		
+		if (model in carTable[make]) {			
+			var engines = $("#engine").val().split("\n");									
+			carTable[make][model] = [];
+			engines.forEach(function(item, index) {
+				
+				carTable[make][model].push(item.trim());				
+			});
+			//console.log("engines changed", carTable[make][model]);			
+		} else {
+			console.log("model not in carTable!", selected, carTable);			
+		}
+		console.log("updated engines", carTable[make][model]);
+		updateOutput(carTable);
+		//following line is doing something manually out of frustration.
+		Cookies.set(cookie_name, $("#output").val());
+	});
+	
+	/*var refreshEngines = function (chosen_make, chosen_model, table) {	
+		var out_str = "";
+		table[chosen_make][chosen_model].forEach(function(engine) {
+			out_str += engine + "\n";
+		});					
+		$("#engine").val(out_str);
+		$("#engine").html(out_str);			
+	}*/
+	
+	$("#select_make").change(function () {
+		var selected_option = $("#select_make").find(":selected")
+		
+		var out_str = "";
+		if (selected_option) { 			
+			selected.make = selected_option.val();
+			//update field to data
+			if (undefined !== selected.make) {
+				updatePanel("model", carTable[selected.make]);
+				updateSelectWithTable("select_model", carTable[selected.make]);			
+				//update engine choices too.
+				var first= Object.keys(carTable[selected.make])[0];
+				selected.model = first;
+				//console.log(selected.make, selected.model);
+				if (selected.model) {
+					updatePanel("engine", carTable[selected.make][selected.model]);
+				}
+			}
+		} else {
+			//no models for make.
+			$("#engine").val("");
+		}
+		
+	});
+	
+	
+	
+	$("#select_model").change(function () {
+		var selected_option = $("#select_model").find(":selected")
+		if (selected_option) { 
+			selected.model = selected_option.val();
+			//var chosen_make = $("#chosen_make").val();			
+			//update field to data
+			updatePanel("engine", carTable[selected.make][selected.model]);
+			//refreshEngines(selected.make, selected.model, carTable);			
+		}
+	});
+	
+	$("#output").bind('input propertychange', function () {
+		//TODO: reverse fill;
+		carTable = deserializeCSV($("#output").val());
+		Cookies.set(cookie_name, $("#output").val());
+	});
+	
+	
+	$("#output").click(function() {
+		//updateOutput(carTable);
+		//var output = document.getElementById('clipboard');		
+		//output.setAttribute("value", output.innerHTML); 
+		//console.log(output);
+		//$("#output").val(output.getAttribute("value"));
+		//$.cookie(cookie_name, $("#output").val());
+		//console.log(document.execCommand('copy'));
+	});
+
+		//$("#make").click(function () {});
+		//$("#make").on("mouseup", function (eventData) {
+			/*
+			var lineHeight = $(this).css("line-height");
+			lineHeight = parseInt(lineHeight.substring(0, lineHeight.length - 2));
+
+			var line = Math.floor(eventData.offsetY / lineHeight);
+			alert($(this).val().split("\n")[line]);
+			 */
+		//});
+
+	});
+</script>
+</html>
