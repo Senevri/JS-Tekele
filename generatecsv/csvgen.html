@@ -234,7 +234,7 @@ $(document).ready(function () {
 			//console.log("make:", make);
 			var models = table[make];
 			if ($.isArray(models)) {
-				if (models.length < 1) {
+				if (Object.keys(models).length < 1) {
 					//unfinished table
 					if ("" !== make) {
 						//console.log(make);
