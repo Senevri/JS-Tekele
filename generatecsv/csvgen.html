@@ -73,6 +73,11 @@ textarea {
 <div>
 <textarea id="output"></textarea>
 </div>
+<div>
+<form>
+<label>Output format: IlmanVuosia</label><input id="without_years" name="pretty" value="pretty" type="checkbox"></input>
+</form>
+</div>
 </body>
 <script type="text/javascript">
 </script>
@@ -127,6 +132,10 @@ $(document).ready(function () {
 		*/
 		//console.log("deserializing...");
 		rows.forEach(function(row) {			
+			if (0 == row.trim().length) {
+				//returns from function, going to next item in foreach. /jsnoob
+				return;
+			}
 			var item = row.split(";");
 			//final semicolon means there's one extra item.
 			//console.log(item);
@@ -140,7 +149,7 @@ $(document).ready(function () {
 				table[item[0]] = [];
 			}
 			try { 
-				console.log("item.length: ", item.length);
+				//console.log("item.length: ", item.length);
 				switch (item.length) {
 					case 1:						
 						break;
@@ -213,6 +222,9 @@ $(document).ready(function () {
 		var newTable = [];
 		newKeys.forEach(function(key) {
 			key = key.trim();
+			if (0 == key.length) {
+				return; // skip to next key;
+			}
 			newTable[key] = [];
 			if (key in table) {
 				newTable[key] = table[key];
@@ -224,17 +236,20 @@ $(document).ready(function () {
 	
 		
 	var updateOutput = function (table) {
-		console.log("updateOutput fires");
+		//console.log("updateOutput fires");
 		$("#output").val("");
 		
 		var out_line = "";
 		//console.log("updateOutput", table);
+		var pretty = $("#without_years").prop("checked");
+		console.log("pretty:", pretty);
 				
 		for (var make in table) {
 			//console.log("make:", make);
+			
 			var models = table[make];
 			if ($.isArray(models)) {
-				if (Object.keys(models).length < 1) {
+				if (Object.keys(models).length == 0) {
 					//unfinished table
 					if ("" !== make) {
 						//console.log(make);
@@ -247,14 +262,20 @@ $(document).ready(function () {
 						var engines = models[model];
 						//console.log(engines);						
 						if ($.isArray(engines)) {
-							if (engines.length === 0) {					
+							//console.log("engines.length ", engines.length);
+							// deserialization of csv may put in engines array [""]. 
+							if (engines.length === 0 ||(engines.length===1 && engines[0]==="")) {					
 								out_line = out_line.concat('"',make.trim(),'"', ";", '"',model.trim(),'"', ";\n");
 							}
 							
 							engines.forEach(function(engine) {					
 								if("" !== engine) {
 									//console.log("\t\tengine:", engine);							
-									out_line = out_line.concat('"',make.trim(),'"', ";", '"', model.trim(), '"', ";", '"', engine.trim(), '"', "\n");							
+									if (!pretty) {
+										out_line = out_line.concat('"',make.trim(),'"', ";", '"', model.trim(), '"', ";", '"', engine.trim(), '"', "\n");		
+									} else {
+									
+									}								
 								}
 							});
 						} else {
@@ -293,6 +314,10 @@ $(document).ready(function () {
 			$("#" + panel).val(out_str);
 			$("#" + panel).html(out_str);					
 	}
+	
+	$("#without_years").bind('input change', function () {
+		updateOutput(carTable);
+	});
 
 	$("#make").bind('input propertychange', function () {
 		// clear cartable because Make is "constant"
@@ -336,8 +361,11 @@ $(document).ready(function () {
 			var engines = $("#engine").val().split("\n");									
 			carTable[make][model] = [];
 			engines.forEach(function(item, index) {
-				
-				carTable[make][model].push(item.trim());				
+				//no blank entries
+				item = item.trim();
+				if ("" !== item) {
+					carTable[make][model].push(item);				
+				}
 			});
 			//console.log("engines changed", carTable[make][model]);			
 		} else {
