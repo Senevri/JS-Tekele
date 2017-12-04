@@ -274,7 +274,11 @@ $(document).ready(function () {
 									if (!pretty) {
 										out_line = out_line.concat('"',make.trim(),'"', ";", '"', model.trim(), '"', ";", '"', engine.trim(), '"', "\n");		
 									} else {
-									
+										var components = engine.split("\t");
+										// 0 =  engine, 1 = kw/hw, 2 = years mm/yyyy - mm/yyyy, 4 = code
+										var kw = components[1].split('/');
+										out_line = out_line.concat('"',make.trim(),'"', ";", '"', model.trim(), '"', ";", '"',
+											components[0].trim(), ' (', kw[0] , 'Kw)"',"\n");
 									}								
 								}
 							});
