@@ -75,7 +75,16 @@ textarea {
 </div>
 <div>
 <form>
+<label>Ulkoasu:</label>
+<select id="select_output" name="output_format">
+<option value="default">Oletus</option>
+<option value="osalinkki">Osalinkki->IlmanVuosia</option>
+<option value="autoluettelo">Autoluettelo->IlmanVuosia</option>
+</select>
+<!-- 
 <label>Output format: IlmanVuosia</label><input id="without_years" name="pretty" value="pretty" type="checkbox"></input>
+<label>Output format: Autoluettelo->IlmanVuosia</label><input id="autoluettelo" name="autoluettelo" value="autoluettelo" type="checkbox"></input>
+-->
 </form>
 </div>
 </body>
@@ -176,12 +185,12 @@ $(document).ready(function () {
 		//$("#make").val(unique.join("\n"));
 		//car list, first car's models, first model's engines
 		try {
-		$("#make").val(Object.keys(table).join("\n"));
-		selected.make = Object.keys(table)[0];
-		updateSelectWithTable("select_make", table);
-		selected.model = Object.keys(table[selected.make])[0];
-		updateSelectWithTable("select_model", table[selected.make]);
-		$("#model").val(Object.keys(table[selected.make]).join("\n"));		
+			$("#make").val(Object.keys(table).join("\n"));
+			selected.make = Object.keys(table)[0];
+			updateSelectWithTable("select_make", table);
+			selected.model = Object.keys(table[selected.make])[0];
+			updateSelectWithTable("select_model", table[selected.make]);
+			$("#model").val(Object.keys(table[selected.make]).join("\n"));		
 		if (!$.isArray(table[selected.make][selected.model])) {
 			table[selected.make][selected.model] = [];
 		}
@@ -241,8 +250,10 @@ $(document).ready(function () {
 		
 		var out_line = "";
 		//console.log("updateOutput", table);
-		var pretty = $("#without_years").prop("checked");
-		console.log("pretty:", pretty);
+		
+		var outputFormat = $("#select_output").find(":selected").val();
+		console.log("outputFormat:", outputFormat);
+		//console.log(table);
 				
 		for (var make in table) {
 			//console.log("make:", make);
@@ -258,7 +269,6 @@ $(document).ready(function () {
 				}				
 				for (var model in models) {				
 					if(model !== "") {
-					//console.log("\tmodel:", model);
 						var engines = models[model];
 						//console.log(engines);						
 						if ($.isArray(engines)) {
@@ -270,16 +280,56 @@ $(document).ready(function () {
 							
 							engines.forEach(function(engine) {					
 								if("" !== engine) {
-									//console.log("\t\tengine:", engine);							
-									if (!pretty) {
+									//console.log("\t\tengine:", engine);		
+									//console.log("switch ", outputFormat);
+									switch (outputFormat) {
+										case "osalinkki": 
+											var components = engine.split("\t");
+											// 0 =  engine, 1 = kw/hw, 2 = years mm/yyyy - mm/yyyy, 3 = code
+											var kw = components[1].split('/');
+											var code = "";
+											if (4 === components.length) {
+												code = code.concat(' ', components[3]);
+												//console.log("code:", code);
+											}
+											out_line = out_line.concat('"',make.trim(),'"', ";", '"', 		
+											model.trim(), '"', ";", '"',
+											components[0].trim(), ' (', kw[0] , 'Kw)', code, '"', "\n");
+										break;
+										case "autoluettelo": 
+											var components = engine.split("\t");
+											// 0 =  engine, 1 = fuel, 2 = chassis, 3 = year, 4 = " ", 5 = kw / hv, 6 = engine cm3
+											var kw = components[5].split('/');
+											//console.log(components);
+											var code = "";											
+											out_line = out_line.concat('"',make.trim(),'"', ";", '"', 		
+											model.trim(), '"', ";", '"',
+											components[0].trim(), ' (', kw[0] , 'Kw)', code, '"', "\n");
+										break;
+										case "default":
+											out_line = out_line.concat('"',make.trim(),'"', ";", '"', model.trim(), '"', ";", '"', engine.trim(), '"', "\n")
+										break;
+										default: 
+											out_line = out_line.concat('"',make.trim(),'"', ";", '"', model.trim(), '"', ";", '"', engine.trim(), '"', "\n")
+										break;										
+									}
+									/*if (!pretty) {
 										out_line = out_line.concat('"',make.trim(),'"', ";", '"', model.trim(), '"', ";", '"', engine.trim(), '"', "\n");		
 									} else {
 										var components = engine.split("\t");
-										// 0 =  engine, 1 = kw/hw, 2 = years mm/yyyy - mm/yyyy, 4 = code
+										// 0 =  engine, 1 = kw/hw, 2 = years mm/yyyy - mm/yyyy, 3 = code
 										var kw = components[1].split('/');
-										out_line = out_line.concat('"',make.trim(),'"', ";", '"', model.trim(), '"', ";", '"',
-											components[0].trim(), ' (', kw[0] , 'Kw)"',"\n");
-									}								
+										var code = "";
+										if (4 === components.length) {
+											code = code.concat(' ', components[3]);
+											//console.log("code:", code);
+										}
+										out_line = out_line.concat('"',make.trim(),'"', ";", '"', 		
+											model.trim(), '"', ";", '"',
+											components[0].trim(), ' (', kw[0] , 'Kw)', code, '"', "\n");
+									}
+
+									*/									
 								}
 							});
 						} else {
@@ -389,6 +439,9 @@ $(document).ready(function () {
 		$("#engine").val(out_str);
 		$("#engine").html(out_str);			
 	}*/
+	$("#select_output").change(function () {
+		updateOutput(carTable);
+	});
 	
 	$("#select_make").change(function () {
 		var selected_option = $("#select_make").find(":selected")
