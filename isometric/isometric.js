@@ -3,12 +3,15 @@ var objects = [
     {x: 1, y: 1, z:0, id:1},
     {x: 0, y: 1, z:1, id:1},
     {x: 0, y: 6, z:0, id:1},
+    {x: 0, y: 5, z:0, id:1},
+    {x: 0, y: 8, z:0, id:0},
+    {x: 0, y: 7, z:0, id:1},
     {x: 0, y: 4, z:0, id:1},
     {x: 0, y: 3, z:0, id:1},
     {x: 0, y: 2, z:0, id:1},
-    {x: 12, y: 8, z:0, id:1},
-    {x: 12, y: 8, z:8, id:1},
-    {x: 0, y: 8, z:8, id:1}
+    {x: 12, y: 8, z:0, id:0},
+    {x: 12, y: 8, z:8, id:0},
+    {x: 0, y: 8, z:8, id:0}
 ]
 
 var makeground = function() {
@@ -35,7 +38,7 @@ var drawloop = function(ctx) {
     sortobjects()
     for (i in objects) {
         var obj = objects[i]
-        ctx.drawImage(images[obj.id], 120+obj.x*24-obj.z*8, 190-obj.y*24+obj.z*8)
+        ctx.drawImage(images[obj.id], 120+obj.x*24-obj.z*8, 192-obj.y*24+obj.z*8)
     }
 }
 
