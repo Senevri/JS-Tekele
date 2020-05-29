@@ -1,4 +1,4 @@
-var objects = [
+var world = [
     {x: 0, y: 1, z:0, id:1},
     {x: 1, y: 1, z:0, id:1},
     {x: 0, y: 1, z:1, id:1},
@@ -15,11 +15,12 @@ var objects = [
 ]
 
 var camera = {
-    x: 0, y:0, z:0
+    x: 3, y:6, z:0
 }
 
+// Fixme: Not in draw order
 var cursor = {
-    x:8, y:7, z:4
+    x:6, y:0, z:0
 }
 
 // #INPUT
@@ -41,105 +42,90 @@ document.addEventListener('keydown', function(event) {
 
 });
 
+var update_cursor = function(event){
+    tilesize = 24*2
+    let x = Math.floor(event.clientX/tilesize)
+    let y = Math.floor(event.clientY/tilesize)    
+    cursor.x = x-camera.x
+    cursor.y = y-camera.y
+    
+}
+
+document.addEventListener('mousedown', function(event) {
+    update_cursor(event)
+    console.log("camera", camera)
+    console.log("cursor", cursor)     
+    console.log(
+            world.find(elem => {
+            return (elem.x == cursor.x && elem.y == cursor.y && elem.z == cursor.z )
+        })
+    )
+})
+
+document.addEventListener('mousemove', function(event) {
+    update_cursor(event)
+})
+
 var makeground = function() {
-    for (var z=-2; z<10; z++) {
-        for (var x = -2; x < 12; x++) { 
-            objects.push({y:0, x:x, z:z, id:0})
+    for (var z=0; z<10; z++) {
+        for (var x = 0; x < 12; x++) { 
+            world.push({y:0, x:x, z:z, id:0})
         }
     }
 }
 
-var sortobjects = function() {
-    objects.sort((a,b)=>{
+var sortworld = function() {
+    world.sort((a,b)=>{
         return (a.x-b.x)
     })
-    objects.sort((a,b)=>{
+    world.sort((a,b)=>{
         return (a.y-b.y)
     })
-    objects.sort((a,b)=>{
+    world.sort((a,b)=>{
         return (a.z-b.z)
     })
 }
 
 var drawloop = function(ctx) {
-    sortobjects()
-    for (i in objects) {
-        var obj = objects[i]
+    sortworld()
+    for (i in world) {
+        var obj = world[i]
         var x = obj.x + camera.x
         var y = obj.y + camera.y
         var z = obj.z + camera.z        
         
-        ctx.drawImage(images[obj.id], 120+x*24-z*8, 192-y*24+z*8)
+        ctx.drawImage(images[obj.id], x*24-z*8, y*24+z*8)
         
     }
     drawcursor(ctx)
 }
 
+var cursor_opacity = 1
+var cursor_fading = true
+
 var drawcursor = function(ctx) {
-    points = [        
-        24,0,
-        24,24,
-        0,24,
-        0,0,
-        24, 0,
-        0,0
-        
-    ]
-
-    x = cursor.x*24
-    y = cursor.y*24
-    z = cursor.z*8
-    ctx.strokeStyle = "#00ff00"    
+    let shiftx = [0, 24, 0, 24]
+    let shifty = [0, 0, 24, 24]
+    x = (cursor.x+camera.x)*24
+    y = (cursor.y+camera.y)*24
+    z = (cursor.z+camera.z)*8
+    ctx.strokeStyle = `rgba(0,255,0, ${cursor_opacity})`
     ctx.beginPath()
-    ctx.moveTo(x+8-z, y+z);
-    for (i=0; i<points.length; i+=2) 
-    {
-        console.log(points.length, i)
-        if (points[i+1] != "undefined") {
-            ptx = points[i]+x+8-z
-            pty = points[i+1]+y+z
-            ctx.lineTo(ptx, pty);                    
-            ctx.stroke();
-        }
+    ctx.rect(x+8-z, y+z, 24, 24)
+    ctx.rect(x-z, y+8+z, 24, 24)
+    for (i in shiftx) {        
+        ctx.moveTo(x+8-z+shiftx[i], y+z+shifty[i])
+        ctx.lineTo(x-z+shiftx[i], y+8+z+shifty[i])        
     }
-    ctx.moveTo(x-z, y+8+z);
-    for (i=0; i<points.length; i+=2) 
-    {
-        console.log(points.length, i)
-        if (points[i+1] != "undefined") {
-            ptx = points[i]+x-z
-            pty = points[i+1]+y+8+z
-            ctx.lineTo(ptx, pty);                    
-            
-            ctx.stroke();
-        }
-    }
-    ctx.moveTo(x-z, y+8+z)
-    ctx.lineTo(x-z+8, y+z)
-    ctx.moveTo(x+24-z, y+24+8+z)
-    ctx.lineTo(x+24+8-z, y+24+z)
-    ctx.moveTo(x-z, y+24+8+z)
-    ctx.lineTo(x+8-z, y+24+z)
-    ctx.moveTo(x+24-z, y+8+z)
-    ctx.lineTo(x+24+8-z, y+z)
+    ctx.stroke()
 
-    ctx.stroke();
-
+    fade_speed = 0.01
+    cursor_opacity += cursor_fading ? -fade_speed : fade_speed
+    if (cursor_opacity <= 0.3) cursor_fading = false
+    if (cursor_opacity >= 1.0) cursor_fading = true
+    
 }
 
-var old_drawloop = function(ctx) {
-    //ctx.drawImage(images[0], 0, 0)
-    for (var z=0; z<8; z++) {
-        //ctx.drawImage(images[0], i*24, 0)
-        //ctx.drawImage(images[0], 240, i*24)
-        for (var x=0;x<12;x++) {
-            for (var y=0;y<8;y++) {
-                ctx.drawImage(images[0], 120+x*24-z*8, 190-y*24+z*8)
-            } 
-        }
-
-    }
-}
 var windowsetup = function() {
     canvas = document.getElementById("isometric")
     canvas.style.imageRendering =  "pixelated"
