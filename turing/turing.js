@@ -178,19 +178,34 @@ function hexify(int, pad) {
     }
     clear_screen()
 
+    class Vidchip {
+        //ram area used by vidchip currently
+        ram_start=0xa000
+        ram_end=0xde80
+        pixelwidth=160
+        pixelheight=100
+        constructor() {
+        }
+    }
+
+    let video = new Vidchip()
+
     var ctx
     function update_screen(){
         var canvas = document.getElementById("screen")
         ctx = canvas.getContext('2d')
         var monochrome = false
-        var start_address = 0xa000
-        var end_address = 0xde80
+        var start_address = 0x0000
+        var end_address = 0xffff
         var old_value = 0
 
         var style = null
 
+        scale = canvas.width/video.pixelwidth
+        bitscale = 32/8
+
         var imageData = ctx.createImageData(canvas.width, canvas.height)
-        for (i=0; i!=160*100;i++){
+        for (i=start_address; i!=end_address;i++){
             var value = memory[start_address+i]
             if (monochrome) {
                 var r = value
@@ -206,8 +221,8 @@ function hexify(int, pad) {
             var y = Math.floor(i/160)
             for (zi=0;zi<3;zi++) {
                 for (j=0;j<3;j++) {
-                    position = ((x*3)+(3*(y*canvas.width)))*4
-                    position = position + ((zi+j*canvas.width)*4)
+                    position = ((x*scale)+(scale*(y*canvas.width)))*bitscale
+                    position = position + ((zi+j*canvas.width)*bitscale)
                     imageData.data[position] = r
                     imageData.data[position+1] = g
                     imageData.data[position+2] = b
@@ -234,10 +249,10 @@ function hexify(int, pad) {
     ])
     memory.pointer = 0xff11
     memory.append([
-        asm.mov, 0x00, 0xa000,
-        asm.mov, 0x00, 0xa000+160,
-        asm.mov, 0x00, 0xa000+320,
-        asm.mov, 0x00, 0xa000+480,
+        asm.mov, 0x00, 0xa0a1,
+        asm.mov, 0x00, 0xa0a1+160,
+        asm.mov, 0x00, 0xa0a1+320,
+        asm.mov, 0x00, 0xa0a1+480,
         //asm.add, 0x05, 0xBE9D,
         //asm.add, 0x05, 0xBE9E,
         //asm.add, 0x01, 0xff, 0x13,
@@ -256,7 +271,7 @@ function hexify(int, pad) {
         asm.jmp, 0x0100
     ])
 
-    memory.pointer = 0xa000 + 50 * 160 + 80 - 2
+    memory.pointer = video.ram_start + 50 * 160 + 80 - 2
     addr = memory.pointer
 
 
@@ -279,6 +294,17 @@ function hexify(int, pad) {
 
         memory.write(addr + 160*i, num_arr)
     })
+
+    // draw "screen borders for debugging".
+    // Cheating in that it doesn't use memory operations.
+
+    for (i=0;i<160*100;i++) {
+        x = i % 160
+        y = (i-x)/160
+        if (y==0 || y==99 || x==0 || x==159) {
+            memory[video.ram_start+i] = 0xff
+        }
+    }
 
     var op_counter = 0
 
