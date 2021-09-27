@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<title></title>
+		<!--[if lt IE 9]>
+		<script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+	</head>
+	<body>
+        <header>
+            <style>
+                div.ulc{
+                    position: absolute;
+                    right: 2px;
+                    top: 2px;
+                    border: 2px solid black;
+                }
+                div#content{
+                    float:left;
+                    font-family: 'Courier New', Courier, monospace;
+                    overflow-y:scroll;
+                    max-height: 100vh
+                }
+                div#screenwrap{
+                    float:left;
+                    border: 8px solid blue
+                }
+            </style>
+        </header>
+        
+
+        <div id="screenwrap">
+            <canvas id="screen" width=320 height=200></canvas>
+        </div>
+        <div id="content">
+
+        </div>
+
+        <div class="ulc">
+            <span>Current memory address:</span>
+            <div id="memory_pointer"></div>
+            <span>number of ops done:</span>
+            <div id="opcounter"></div>
+        </div>
+
+        <footer>
+            <script type="text/javascript" src="turing.js"></script>
+        </footer>
+	</body>
+
+</html>
