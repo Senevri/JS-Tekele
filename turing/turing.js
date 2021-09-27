@@ -19,6 +19,7 @@
 
     class Memory extends Uint8Array {
         pointer = 0
+
         push(uint8) {
             this[this.pointer] = uint8
             this.pointer++
@@ -70,7 +71,8 @@
         "jmp": 0x02,
         "mov": 0x03,
         "add": 0x04,
-        "copy": 0x05
+        "copy": 0x05,
+        "jmeq":0x06,
     }
 
     let opcodes = Object.keys(asm).reduce((obj, key)=>{obj[asm[key]] = key; return obj}, {})
@@ -103,6 +105,15 @@
             value = memory[addr1]
             memory[addr2] = value
             return " " + value + " from  " + addr1 + " to " + addr2
+        },
+        "jmeq": function() {
+            // Jump if memory equals; cheat...
+            value = memory.step()
+            addr1 = read_address()
+            addr2 = read_address()
+            //if addr1 == value, jump to addr2
+            memory.pointer = memory[addr1] == value ? addr2 : memory.pointer
+            return " " + value + " in " + addr1 + " jmp " + addr2
         }
 
     }
@@ -113,6 +124,7 @@
         [asm.mov]: instructions.mov,
         [asm.add]: instructions.add,
         [asm.copy]: instructions.copy,
+        [asm.jmeq]: instructions.jmeq,
     }
 
 // Helpers
@@ -184,11 +196,84 @@ function hexify(int, pad) {
         ram_end=0xde80
         pixelwidth=160
         pixelheight=100
+        palette = new Uint8ClampedArray(768)
         constructor() {
+            this.init_palette()
+        }
+
+        init_palette() {
+            //set red
+            for (var i=0;i<this.palette.length+3;i+=3){
+                let x = (i/3)%16
+                let y = Math.floor(i/3 / 16)
+
+                this.palette[i]= 0.8*x*1.5*y*4-(16-x)-(16-y)
+
+                let dx = 8-Math.abs(x-8)
+                let dy = 8-Math.abs(y-8)
+                this.palette[i+1]=(16*y-dy*16)+x*8-((16-y)*8)
+                this.palette[i+2]=(16*x-dx*16)+x*8-((y)*8)
+
+                //console.log(i,x,y,Math.floor(i/3))
+            }
+            for (var i=0;i<this.palette.length/(3);i++){
+                let x=i % 16
+                let y=Math.floor(i / 16)
+                //this.palette[i*3] = r//r
+                //this.palette[1+i*3] = g//g
+                //this.palette[2+i*3] = (x*y)
+            }
+            //this.palette[15*3+48*15]=255
+            //this.palette[3]=255
+            //this.palette[15+48*15+1]=255
+            //this.palette[15+48*15+1]=255
         }
     }
 
     let video = new Vidchip()
+
+    function clip(address, width, height, step){
+        data = []
+        memory.pointer=address
+        var counter=0
+        var heightcounter=0
+        for (i=0;i<width*height;i++) {
+             if (counter==width){
+                 //memory.pointer += 480-48//(160*3-48)
+                 memory.pointer += step-width
+                 counter=0
+                 heightcounter++
+            }
+            data.push(memory.step())
+            counter++
+        }
+        return data
+    }
+
+    function blit(address, width, height, step, data) {
+        memory.pointer=address
+        var counter=0
+        var heightcounter=0
+        for (i=0;i<width*height;i++) {
+             if (counter==width){
+                 //memory.pointer += 480-48//(160*3-48)
+                 memory.pointer += step-width
+                 counter=0
+                 heightcounter++
+            }
+            memory.push(data[i])
+            counter++
+        }
+    }
+    let range = Array.from(Array(256).keys())
+    //blit palette
+    blit(0x1000,16,16,160,range)
+
+    //blit and clip palette
+    blit(0x2000,8,8,160,clip(0x1000+8+160*8,8,8,160))
+
+    dump_memory(0x1000,768)
+
 
     var ctx
     function update_screen(){
@@ -211,16 +296,19 @@ function hexify(int, pad) {
                 var r = value
                 var g = r
                 var b = r
-            } else {
+            } else { //gotta be paletted anyway.
                 color = value
-                var r = (color % 4) * 64
-                var g = ((color >> 2) % 8) * 32
-                var b = ((color >> 5) % 8) * 32
+                // var r = (color % 4) * 64
+                // var g = ((color >> 2) % 8) * 32
+                // var b = ((color >> 5) % 8) * 32
+                var r = video.palette[3*color]
+                var g = video.palette[3*color+1]
+                var b = video.palette[3*color+2]
             }
             var x = i % 160
             var y = Math.floor(i/160)
-            for (zi=0;zi<3;zi++) {
-                for (j=0;j<3;j++) {
+            for (zi=0;zi<scale;zi++) {
+                for (j=0;j<scale;j++) {
                     position = ((x*scale)+(scale*(y*canvas.width)))*bitscale
                     position = position + ((zi+j*canvas.width)*bitscale)
                     imageData.data[position] = r
@@ -233,9 +321,9 @@ function hexify(int, pad) {
         }
         ctx.putImageData(imageData,0,0)
     }
+    update_screen()
 
-
-
+    memory.pointer=0x000
     memory.append([
         asm.jmp, 0x01, 0x00, //leave the first 255 bytes for data
         asm.nop,
@@ -249,26 +337,33 @@ function hexify(int, pad) {
     ])
     memory.pointer = 0xff11
     memory.append([
-        asm.mov, 0x00, 0xa0a1,
-        asm.mov, 0x00, 0xa0a1+160,
-        asm.mov, 0x00, 0xa0a1+320,
-        asm.mov, 0x00, 0xa0a1+480,
+        asm.mov, 0x00, 0xa0f4,
+        // asm.mov, 0x00, 0xa0a1+160,
+        // asm.mov, 0x00, 0xa0a1+320,
+        // asm.mov, 0x00, 0xa0a1+480,
         //asm.add, 0x05, 0xBE9D,
         //asm.add, 0x05, 0xBE9E,
         //asm.add, 0x01, 0xff, 0x13,
         asm.add, 0x01, 0xff14,
         asm.add, 0x01, 0xff12,
-        asm.add, 0x01, 0xff14+0x04,
-        asm.add, 0x02, 0xff12+0x04,
-        asm.add, 0x01, 0xff14+0x08,
-        asm.add, 0x03, 0xff12+0x08,
-        asm.add, 0x01, 0xff14+0x0c,
-        asm.add, 0x04, 0xff12+0x0c,
+        asm.add, 0x01, 0x00, 0x01,
+        asm.jmeq, 0xff, 0xff14, 0xff40,
+        // asm.add, 0x01, 0xff14+0x04,
+        // asm.add, 0x01, 0xff12+0x04,
+        // asm.add, 0x01, 0xff14+0x08,
+        // asm.add, 0x01, 0xff12+0x08,
+        // asm.add, 0x01, 0xff14+0x0c,
+        // asm.add, 0x01, 0xff12+0x0c,
         asm.copy, 0xff14, 0x00, 0x01, //need to pad input
         //asm.jmp, 0xff, 0x2d, //jump past data bytes
         //100, 100,
         //asm.mov, 0xff, 0xa0 ,0x00,
-        asm.jmp, 0x0100
+        asm.jmp, 0xff, 0x11
+    ])
+    memory.pointer = 0xff40
+    memory.append([
+        asm.add, 0x01, 0xff13,
+        asm.jmp, 0xff11
     ])
 
     memory.pointer = video.ram_start + 50 * 160 + 80 - 2
@@ -313,7 +408,7 @@ function hexify(int, pad) {
         op = memory.step()
         //print(cur_ptr.toString(16).padStart(4, "0") + ": " + opcodes[op])
         msg = ops[op]()
-        //println(cur_ptr.toString(16).padStart(4, "0") + ": " + opcodes[op] + msg)
+        println(cur_ptr.toString(16).padStart(4, "0") + ": " + opcodes[op] + msg)
         op_counter++
         return op
     }
@@ -375,6 +470,8 @@ function hexify(int, pad) {
 
     dump_memory(0xff11, 31)
     decode(0xff11)
+    dump_memory(0xff40, 31)
+    decode(0xff40)
 
     async function run() {
     //function run() {
