@@ -26,15 +26,15 @@
         }
 
         append(arr){
-            println(arr)
+            //println(arr)
             arr.forEach((e)=>{
-                if (e>255){
-                    this.push(Math.floor(e/256))
-                    this.push(e % 256)
+                if (e>0xff){ // big endian
+                    this.push(e >> 8)
+                    this.push(e & 0xff)
                 } else {
                     this.push(e)
                 }
-
+                let p=this.pointer-1
             })
         }
         step(){
@@ -42,7 +42,7 @@
         }
 
         w_step(){
-            var word = this.step()*256
+            var word = this.step() << 8
             word += this.step()
             return word
         }
@@ -60,83 +60,245 @@
 
 // "CPU"
 
-    var registers = {
-        "ax":0xfe
+    function to_word(b1, b2){
+        return b1 << 8 + b2
+    }
+    function get_lo_hi(word) {
+        return [
+            word & 0xff,
+            word >> 8
+        ]
     }
 
+    class CPU {
+// set up instructions by bytelength, with like,
+// 0 x 0 1
+//     ^ ^
+//     | +- instruction
+//     +--- instruction parameter length in bytes
+// ideas:
+// if length = 1,   operate with acc. Works with add, mov.
+//                  jmp, however, should move forwards in program relative to
+//                  program counter.
+// if length = 2    jmp to address, add, mov add 2 bytes to acc.
+// - note: little endian vs big endian? little-endian makes some sense...
+//
+        memory_map = {
+            pc              : 0x0001, // equal to memory.pointer
+            zeropage        : 0x0000,
+            flags           : {
+                accumulator : 0x0002,
+                halt        : 0x0004
+            },
+            stack           : 0x0100, //stack pointer
+            mem_start       : 0x0200, //maybe?
+        }
+        acc_ptr = memory_map.flags.accumulator
+
+        //memory=null
+
+        // constructor(memory){
+        //     this.memory = memory
+        // }
+
+        // use list index for bytecount
+        opcode_types = [
+            "halt", "nop", "jmp", "mov", "add", "copy", "jeq", "jne"
+        ]
+
+        get_instruction(opcode) {
+            let type = opcode & 0xf
+            let length = (opcode & 0xf0) >> 4
+            //console.log(hexify(memory.pointer, 4), opcode, type, this.opcode_types[type], length)
+            return {asm: this.opcode_types[type], length: length}
+        }
+
+        instructions = {
+            nop: [
+                ()=>{} // 0
+            ],
+            halt: [
+                ()=>{memory[this.memory_map.flags.halt] = 0x01}
+            ],
+            jmp: [
+                ()=>{},
+                ()=>{
+                    let value = memory.step()
+                    memory.pointer += value
+                },
+                ()=>{
+                    let address = memory.w_step()
+                    memory.pointer = address
+                    //console.log("jump to", hexify(address,4), hexify(memory.pointer, 4))
+                }
+            ],
+            mov: {
+                0: null,
+                1: ()=>{
+                    let value = memory.step()
+                    memory[acc_ptr] = value
+                },
+                2: null,
+                3: ()=>{ //3
+                    let value = memory.step()
+                    let address = memory.w_step()
+                    memory[address] = value
+                },
+                4: ()=>{ //4 // should this be copy or mov?
+                    let value = memory.w_step()
+                    let address = memory.w_step()
+                    memory[address] = value
+                }
+
+            },
+            add: {
+                0: null,
+                1: ()=>{
+                    console.log("add to acc")
+                    let value = memory.step()
+                    memory[acc_ptr] += value
+                },
+                2: null,
+                3: ()=>{ // add byte to target
+                    let value = memory.step()
+                    let address = memory.w_step()
+                    memory[address] += value
+                },
+                4: ()=>{ //add word to target
+                    console.log("add word")
+                    let value = memory.w_step()
+                    let address = memory.w_step()
+                    let bytes = get_lo_hi(value)
+                    memory[address+1] = bytes[0]
+                    memory[address] = bytes[1]
+                }
+            },
+            copy: [
+                ,
+                ,
+                ,
+                ,
+                ()=>{
+                    let addr1 = memory.w_step()
+                    let addr2 = memory.w_step()
+                    memory[addr2] = memory[addr1]
+                }
+            ],
+            jeq: [
+                ,
+                ,
+                ,
+                ()=>{
+                    console.log("jeq 3")
+                    let value = memory.step()
+                    let address = memory.w_step()
+                    memory.pointer = memory[acc_ptr] == value ?
+                    address :
+                    memory.pointer;
+                },
+                ,
+                () => {
+                    //console.log("jeq 5")
+                    let value = memory.step()
+                    let addr1 = memory.w_step()
+                    let addr2 = memory.w_step()
+                    //if addr1 == value, jump to addr2
+                    memory.pointer = memory[addr1] == value ? addr2 : memory.pointer
+                }
+            ],
+            jne: {
+                0: null,
+                1: null,
+                2: null,
+                3: () => {
+                    let value = memory.step()
+                    let address = memory.w_step()
+                    memory.pointer = address ? memory[acc_ptr] == value : memory.pointer
+                },
+                4: () => {
+                    let value = memory.step()
+                    let value2 = memory.step()
+                    let address = memory.w_step()
+                    memory.pointer = address ? value2 == value : memory.pointer
+                }
+            }
+        }
+        process_opcode(asm, length) {
+            let pc = this.memory_map.pc
+            // generate message
+            var bytes = []
+            if (length > 0) {
+                bytes = Array.from(memory.slice(pc, length))
+            }
+            //console.log("bytes",bytes)
+            let msg = [" "]
+            while (bytes.length > 0) {
+                if (bytes.length % 2 ===0) {
+                    msg.push(hexify(bytes[0] + bytes[1], 4))
+                    bytes.shift()
+                    bytes.shift()
+                } else {
+                    msg.push(hexify(bytes[0], 2))
+                    bytes.shift()
+                }
+            }
+            let instruction = this.instructions[asm][length]
+            //console.log(asm, length, this.instructions[asm])
+            instruction()
+            memory[this.memory_map.pc] = memory.pointer
+            return [asm].concat(msg).join(" ")
+        }
+
+
+
+        step() {
+            let cur_ptr = memory.pointer
+            let op = memory.step()
+            let instruction = this.get_instruction(op)
+            //console.log(instruction, memory.slice(cur_ptr, cur_ptr+instruction.length+1), op, "current address:", hexify(cur_ptr,4))
+            let msg = this.process_opcode(instruction.asm, instruction.length)
+            println(hexify(cur_ptr,4) + ": " + msg)
+            op_counter++
+            return op
+        }
+    }
+
+    let cpu = new CPU
 
     let asm = {
         "nop": 0x01,
         "halt": 0x00,
-        "jmp": 0x02,
-        "mov": 0x03,
-        "add": 0x04,
-        "copy": 0x05,
-        "jmeq":0x06,
+        "jmp": 0x22, // = 32+2
+        "mov": 0x33,
+        "add": 0x34,
+        "copy": 0x45,
+        "jeq":0x56,
     }
 
-    let opcodes = Object.keys(asm).reduce((obj, key)=>{obj[asm[key]] = key; return obj}, {})
-
-    let instructions = {
-        "nop": function() {
-            //println("")
-        },
-        "jmplong": function() {
-            target_address = read_address()
-            memory.pointer = target_address
-            return " " + hexify(target_address, 4)
-        },
-        "mov": function() {
-            value = memory.step()
-            address = read_address()
-            memory[address] = value
-            return " " + value + " to " + address
-        },
-        "add": function() {
-            value = memory.step()
-            address = read_address()
-            memory[address] += value
-            return " " + value + " to " + address
-        },
-        "copy": function() {
-            // Normally this would require registers but we can cheat
-            addr1 = read_address()
-            addr2 = read_address()
-            value = memory[addr1]
-            memory[addr2] = value
-            return " " + value + " from  " + addr1 + " to " + addr2
-        },
-        "jmeq": function() {
-            // Jump if memory equals; cheat...
-            value = memory.step()
-            addr1 = read_address()
-            addr2 = read_address()
-            //if addr1 == value, jump to addr2
-            memory.pointer = memory[addr1] == value ? addr2 : memory.pointer
-            return " " + value + " in " + addr1 + " jmp " + addr2
+    var opcodes = {}
+    cpu.opcode_types.forEach((name, index)=>{
+        for (var i=0;i<8;i++) {
+            opcode = (i << 4) + index
+            opcodes[opcode] = name
         }
-
+    })
+    console.log("sanity check")
+    for (key in asm) {
+        console.assert(opcodes[asm[key]] == key)
+        console.assert(cpu.get_instruction(asm[key]).length == asm[key] >> 4)
     }
-
-    let ops = {
-        [asm.nop]: instructions.nop,
-        [asm.jmp]: instructions.jmplong,
-        [asm.mov]: instructions.mov,
-        [asm.add]: instructions.add,
-        [asm.copy]: instructions.copy,
-        [asm.jmeq]: instructions.jmeq,
-    }
+    //console.log(opcodes)
 
 // Helpers
 
-function read_address(){
-    return memory.w_step()
-}
+    function read_address(){
+        return memory.w_step()
+    }
 
-function hexify(int, pad) {
-    if (int == null) return null
-    return int.toString(16).toUpperCase().padStart(pad, "0")
-}
+    function hexify(int, pad) {
+        if (int == null) return null
+        return int.toString(16).toUpperCase().padStart(pad, "0")
+    }
 
 
     function dump_memory(start_address, length) {
@@ -165,7 +327,7 @@ function hexify(int, pad) {
 
 
     function update_ui() {
-        max_lines = 40
+        max_lines = 30
         document.getElementById("memory_pointer").innerText = ""
         println(memory.pointer.toString(), "memory_pointer")
         document.getElementById("opcounter").innerText = ""
@@ -202,7 +364,6 @@ function hexify(int, pad) {
         }
 
         init_palette() {
-            //set red
             for (var i=0;i<this.palette.length+3;i+=3){
                 let x = (i/3)%16
                 let y = Math.floor(i/3 / 16)
@@ -213,20 +374,7 @@ function hexify(int, pad) {
                 let dy = 8-Math.abs(y-8)
                 this.palette[i+1]=(16*y-dy*16)+x*8-((16-y)*8)
                 this.palette[i+2]=(16*x-dx*16)+x*8-((y)*8)
-
-                //console.log(i,x,y,Math.floor(i/3))
             }
-            for (var i=0;i<this.palette.length/(3);i++){
-                let x=i % 16
-                let y=Math.floor(i / 16)
-                //this.palette[i*3] = r//r
-                //this.palette[1+i*3] = g//g
-                //this.palette[2+i*3] = (x*y)
-            }
-            //this.palette[15*3+48*15]=255
-            //this.palette[3]=255
-            //this.palette[15+48*15+1]=255
-            //this.palette[15+48*15+1]=255
         }
     }
 
@@ -271,9 +419,6 @@ function hexify(int, pad) {
 
     //blit and clip palette
     blit(0x2000,8,8,160,clip(0x1000+8+160*8,8,8,160))
-
-    dump_memory(0x1000,768)
-
 
     var ctx
     function update_screen(){
@@ -332,39 +477,31 @@ function hexify(int, pad) {
     ])
     memory.pointer = 0x0100
     memory.append([
-        asm.mov, 13, 0x00, 0x20,
         asm.jmp, 0xff, 0x11
     ])
     memory.pointer = 0xff11
     memory.append([
         asm.mov, 0x00, 0xa0f4,
-        // asm.mov, 0x00, 0xa0a1+160,
-        // asm.mov, 0x00, 0xa0a1+320,
-        // asm.mov, 0x00, 0xa0a1+480,
-        //asm.add, 0x05, 0xBE9D,
-        //asm.add, 0x05, 0xBE9E,
-        //asm.add, 0x01, 0xff, 0x13,
         asm.add, 0x01, 0xff14,
         asm.add, 0x01, 0xff12,
         asm.add, 0x01, 0x00, 0x01,
-        asm.jmeq, 0xff, 0xff14, 0xff40,
-        // asm.add, 0x01, 0xff14+0x04,
-        // asm.add, 0x01, 0xff12+0x04,
-        // asm.add, 0x01, 0xff14+0x08,
-        // asm.add, 0x01, 0xff12+0x08,
-        // asm.add, 0x01, 0xff14+0x0c,
-        // asm.add, 0x01, 0xff12+0x0c,
+        asm.jeq, 0xff, 0xff14, 0xff40,
         asm.copy, 0xff14, 0x00, 0x01, //need to pad input
-        //asm.jmp, 0xff, 0x2d, //jump past data bytes
-        //100, 100,
-        //asm.mov, 0xff, 0xa0 ,0x00,
         asm.jmp, 0xff, 0x11
     ])
     memory.pointer = 0xff40
     memory.append([
         asm.add, 0x01, 0xff13,
+        asm.jeq, 0xfe, 0xff13, 0xff60,
+        asm.jmp, 0xff11,
+        asm.nop
+    ])
+    memory.pointer =0xff60
+    memory.append([
+        asm.mov, 0xa0, 0xff13,
         asm.jmp, 0xff11
     ])
+
 
     memory.pointer = video.ram_start + 50 * 160 + 80 - 2
     addr = memory.pointer
@@ -382,7 +519,7 @@ function hexify(int, pad) {
     ]
 
     arr.forEach((row, i)=>{
-        println(row)
+        println(row.replace(/ /g,"."))
         num_arr = row.split('').map((val)=>{
             return val == "#" ? 0xff: 0x00
         })
@@ -401,20 +538,19 @@ function hexify(int, pad) {
         }
     }
 
+    update_screen()
     var op_counter = 0
 
-    function step() {
-        let cur_ptr = memory.pointer
-        op = memory.step()
-        //print(cur_ptr.toString(16).padStart(4, "0") + ": " + opcodes[op])
-        msg = ops[op]()
-        println(cur_ptr.toString(16).padStart(4, "0") + ": " + opcodes[op] + msg)
-        op_counter++
-        return op
-    }
+
 
     function delay(ms) {
         return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+
+
+    function encode(asm) {
+
     }
 
     function decode(start_addr){
@@ -431,9 +567,10 @@ function hexify(int, pad) {
             pointer = memory.pointer
 
             code = memory.step()
-            cmd = opcodes[code]
-            //println([pointer, code, cmd])
+            cmd = cpu.get_instruction(code).asm
 
+            //println([pointer, code, cmd])
+            //console.log(pointer, code, cmd)
 
             if (["mov", "add"].includes(cmd)) {
                 value = memory.step()
@@ -450,12 +587,13 @@ function hexify(int, pad) {
                 //nop, halt
             }
             //println([value, address, addr1, addr2])
-            output = [hexify(pointer,4),
+            let output = [hexify(pointer,4),
                 cmd,
                 hexify(value , 2),
                 hexify(address,4),
                 hexify(addr1, 4),
                 hexify(addr2, 4)]
+            //return output
             println(output.join(" "))
         }
 
@@ -464,6 +602,7 @@ function hexify(int, pad) {
     println("Dump")
     dump_memory(0x0000, 15)
     decode(0x0000)
+
     dump_memory(0x0100, 15)
     decode(0x0100)
 
@@ -473,17 +612,19 @@ function hexify(int, pad) {
     dump_memory(0xff40, 31)
     decode(0xff40)
 
+    memory.pointer=0
+
     async function run() {
     //function run() {
         memory.pointer = 0
         max_loops = 160*100
         cur_loop = 0;
-        while (asm.halt != step()) {
+        while (asm.halt != cpu.step()) {
             update_ui()
             update_screen()
             cur_loop++
             if (cur_loop == max_loops) break
-            await delay(0)
+            await delay(1)
             //dump_memory(0xff11, 16)
         }
     }
