@@ -7,34 +7,35 @@
         document.createElement("P")
             .appendChild(text));
     console.log(main);
-    
+
     var scripts = document.getElementById("scripts");
-    
+
     window.game = {
         update: function() {
             console.log("game.update");
-            text.nodeValue = game.text;            
+            text.nodeValue = game.text;
         },
-        
+
         reload: function() {
             location.reload(true);
-            
+
         }
-    
+
     }
     var game = window.game;
-    game.text="word";
-    
-    
-    
+    game.text="word is that this reloads document automagically";
+
+
+
     var heartbeat = window.setInterval(function (){
         game.update();
         /*start heartbeat*/
-        //dom.text.nodeValue= "Hellotime, seconds ".concat(foo);		
-        /*end heartbeat*/				
+        //dom.text.nodeValue= "Hellotime, seconds ".concat(foo);
+        /*end heartbeat*/
         //foo++;
+        // only reload if the page has changed
         //location.reload(true);
         //scripts.innerHtml = '<script src=testing.js></script>';
-        
+
 	}, 1000);
 })();
