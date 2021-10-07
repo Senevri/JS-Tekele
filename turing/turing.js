@@ -93,7 +93,7 @@
             stack           : 0x0100, //stack pointer
             mem_start       : 0x0200, //maybe?
         }
-        acc_ptr = memory_map.flags.accumulator
+        acc_ptr = this.memory_map.flags.accumulator
 
         //memory=null
 
@@ -113,6 +113,7 @@
             return {asm: this.opcode_types[type], length: length}
         }
 
+        // instruction index == how many bytes an instruction reads
         instructions = {
             nop: [
                 ()=>{} // 0
@@ -364,17 +365,40 @@
         }
 
         init_palette() {
-            for (var i=0;i<this.palette.length+3;i+=3){
-                let x = (i/3)%16
-                let y = Math.floor(i/3 / 16)
+            // for (var i=0;i<this.palette.length+3;i+=3){
+            //     let x = (i/3)%16
+            //     let y = Math.floor(i/3 / 16)
 
-                this.palette[i]= 0.8*x*1.5*y*4-(16-x)-(16-y)
+            //     this.palette[i]= 0.8*x*1.5*y*4-(16-x)-(16-y)
 
-                let dx = 8-Math.abs(x-8)
-                let dy = 8-Math.abs(y-8)
-                this.palette[i+1]=(16*y-dy*16)+x*8-((16-y)*8)
-                this.palette[i+2]=(16*x-dx*16)+x*8-((y)*8)
+            //     let dx = 8-Math.abs(x-8)
+            //     let dy = 8-Math.abs(y-8)
+            //     this.palette[i+1]=(16*y-dy*16)+x*8-((16-y)*8)
+            //     this.palette[i+2]=(16*x-dx*16)+x*8-((y)*8)
+            // }
+            //interpolate colors between coordinates?
+            //16,0 = blue, 0,16=green, 8,8 = red
+            for (var y = 0;y<16;y++){
+                for (var x = 0;x<16;x++){
+                    let w = (1+x*y)-1
+                    console.log(w)
+                    var dx=6, dy=6
+                    let r = 255-((1+(dx+Math.abs(x-dx)))*(dy+Math.abs(y-dy)))-1
+                    this.palette[(y*16+x)*3] = (w + r*1.2)-((16-x)*(16-y))
+                    dx = 0, dy=16
+                    let g = 255-((1+(dx+Math.abs(x-dx)))*(dy+Math.abs(y-dy)))-1
+                    this.palette[(y*16+x)*3+1] = (w + g)-((16-x)*(16-y))
+                    dx = 14; dy=0
+                    let b = 255-((1+(dx+Math.abs(x-dx)))*(dy+Math.abs(y-dy)))-1
+                    this.palette[(y*16+x)*3+2] = (w + b)-((16-x)*(16-y))
+                    dx = 0; dy=16
+                    //let b2 = 255-((1+(dx+Math.abs(x-dx)))*(dy+Math.abs(y-dy)))-1
+                    this.palette[(y*16+x)*3+2] = w/8 + this.palette[(y*16+x)*3+2]
+                }
             }
+
+
+
         }
     }
 
