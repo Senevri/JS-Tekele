@@ -14,7 +14,8 @@
                     position: absolute;
                     right: 2px;
                     top: 2px;
-                    border: 2px solid black;
+                    border: 2px solid black;                    
+                    border-radius: 0.4em;
                 }
                 div#content{
                     float:left;
@@ -29,6 +30,20 @@
                 div#screen{
                     background-color: solid magenta
                 }
+                div.topbar{      
+                    text-align: right;
+                    background: solid gray;          
+                    background-color: gray;
+                    color: white;
+                    width: 100%;
+                    height: 1.5em;
+                }
+                div.topbar span {
+                    background: transparent;
+                    font-style: Courier; 
+                    font-weight: bolder; 
+                    font-size:larger
+                }
             </style>
         </header>
 
@@ -41,6 +56,9 @@
         </div>
 
         <div class="ulc">
+            <div class="topbar">                
+                <span>&nbsp;></span>
+            </div>
             <span>Current memory address:</span>
             <div id="memory_pointer"></div>
             <span>number of ops done:</span>

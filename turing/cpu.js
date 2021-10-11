@@ -72,8 +72,7 @@ CPU = (function(){
                         let value = this.memory.step()
                         this.memory.pointer += value
                     },
-                    ()=>{
-                        console.log(memory)
+                    ()=>{                        
                         let address = this.memory.w_step()
                         this. memory.pointer = address
                         //console.log("jump to", hexify(address,4), hexify(memory.pointer, 4))
@@ -192,8 +191,7 @@ CPU = (function(){
                     msg.push(hexify(bytes[0], 2))
                     bytes.shift()
                 }
-            }
-            console.log(this.instructions)
+            }            
             let instruction = this.instructions[asm][length]
             //console.log(asm, length, this.instructions[asm])
             instruction()
