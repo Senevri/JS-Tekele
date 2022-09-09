@@ -12,6 +12,15 @@
 <body>
     <header>
         <style>
+            div.cmdline {
+                background: black;
+                color: green;
+                max-height: 300px;
+                overflow-y: scroll;
+                display: flex;
+                flex-direction: column-reverse;
+            }
+
             div.memview {
                 display: inline-block;
                 font-family: 'Courier';
@@ -75,7 +84,8 @@
         <canvas id="memscreen" width=480 height=1250></canvas>
     </div>
     <div class="cmdline" id="input">
-        hellurei
+        Hellurei!<br />
+        >
     </div>
     <div id="content">
 
@@ -100,9 +110,9 @@
 
 
     <footer>
-        <script type="module" src="util.js"></script>
+        <!-- <script type="module" src="util.js"></script>
         <script type="module" src="memory.js"></script>
-        <script type="module" src="cpu.js"></script>
+        <script type="module" src="cpu.js"></script> -->
         <script type="module" src="turing.js"></script>
     </footer>
 </body>

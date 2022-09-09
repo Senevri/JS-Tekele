@@ -29,6 +29,7 @@ export default class CPU {
             accumulator: 0x0002,
             halt: 0x0004
         },
+        io: 0x0010,
         stack: 0x0100, //stack pointer
         mem_start: 0x0200, //maybe?
     }
@@ -65,18 +66,18 @@ export default class CPU {
             halt: [
                 () => { this.memory[this.memory_map.flags.halt] = 0x01 }
             ],
-            jmp: [
-                () => { },
-                () => {
+            jmp: {
+                0: () => { },
+                1: () => {
                     let value = this.memory.step()
                     this.memory.pointer += value
                 },
-                () => {
+                2: () => {
                     let address = this.memory.w_step()
                     this.memory.pointer = address
                     //console.log("jump to", hexify(address,4), hexify(memory.pointer, 4))
                 }
-            ],
+            },
             mov: {
                 0: null,
                 1: () => {

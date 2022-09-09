@@ -1,4 +1,5 @@
 import { hexify, println, clear } from "./util.js"
+import { echo } from "./cmdline.js"
 import CPU from "./cpu.js"
 import Memory from "./memory.js"
 import Vidchip from "./vidchip.js"
@@ -339,9 +340,9 @@ import Vidchip from "./vidchip.js"
     // decode(0xff11)
     // dump_memory(0xff40, 31)
     // decode(0xff40)
-    println(Vidchip.ram_start)
+    println(hexify(video.ram_start))
 
-    dump_memory(0xa000, 16000)
+    //dump_memory(0xa000, 16000)
 
     memory.pointer = 0
 
@@ -358,11 +359,81 @@ import Vidchip from "./vidchip.js"
             if (cur_loop == max_loops) break
             await delay(1)
             clear("memview")
-            dump_memory(0xff11, 16)
+            dump_memory(0x0000, 0x200)
 
         }
     }
     //run()
+
+    async function memview() {
+
+    }
+
+    class InputDevice {
+
+        constructor(address, length_in_bytes) {
+            this.address = address
+            this.length = length_in_bytes
+        }
+
+        write(byte_array) {
+            console.log("write")
+            if (byte_array.length > this.length) {
+                console.log(byte_array, this.length)
+                println("Error: Length of array " + byte_array.toString() + "was longer than device length of " + this.length)
+            }
+            for (const [index, value] of byte_array.entries()) {
+                memory[this.address + index] = value
+            }
+        }
+        read() {
+            console.log("read")
+            output = new Uint8Array(this.length)
+            for (i = 0; i < this.length; i++) {
+                output += memory[this.address + i]
+            }
+            return output
+
+        }
+
+    }
+    let kbdDevice = new InputDevice(cpu.memory_map.io, 3)
+    kbdDevice.keyCodes = ["-1"]
+
+    kbdDevice.keyCodes = kbdDevice.keyCodes.concat(
+        `0123456789abcdefghijklmnopqurstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&/()=?+-\\*_,.;:`
+            .split(""))
+    kbdDevice.keyCodes = kbdDevice.keyCodes.concat([
+        "Enter",
+        "Escape",
+        "Space",
+        "Backspace"
+    ])
+
+
+    function readkbd() {
+        document.addEventListener('keydown', function (event) {
+            if (["Space", "ShiftLeft", "AltLeft", "ControlLeft"].includes(event.code) &&
+                event.target === document.body) {
+                event.preventDefault()
+            }
+
+            let input = new Uint8ClampedArray(3)
+            let flags = [event.ctrlKey, event.altKey, event.shiftKey]
+            let flagbytes = flags[0] + (flags[1] << 1) + (flags[2] << 2)
+            let key = event.key
+            if (event.key == "¤") key = "$"
+            echo(key)
+            input = [0, kbdDevice.keyCodes.indexOf(key), flagbytes]
+            console.log(input.map((v) => hexify(v)).join(""))
+            console.log(flags, flagbytes, input)
+            kbdDevice.write(input)
+            console.log(event)
+            console.log(kbdDevice.keyCodes)
+        })
+    }
+    readkbd()
+
 
     println("hellurei")
     println("end")
