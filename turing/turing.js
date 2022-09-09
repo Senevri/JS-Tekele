@@ -1,9 +1,8 @@
 import { hexify, println, clear } from "./util.js"
-import { echo } from "./cmdline.js"
+import Console from "./cmdline.js"
 import CPU from "./cpu.js"
 import Memory from "./memory.js"
 import Vidchip from "./vidchip.js"
-
 (function () {
 
     //document.getElementById("content").innerText += "asdf"
@@ -11,7 +10,11 @@ import Vidchip from "./vidchip.js"
     println("Hello world")
 
 
+
+
     let memory = new Memory(65535)
+
+    let cmdline = new Console(memory)
 
     function to_word(b1, b2) {
         return b1 << 8 + b2
@@ -49,30 +52,6 @@ import Vidchip from "./vidchip.js"
 
     function read_address() {
         return memory.w_step()
-    }
-
-    function dump_memory(start_address, length) {
-        if (!start_address) start_address = 0;
-        println("memory size: " + memory.length)
-        let rows = []
-        let row = []
-        row.push(hexify(start_address, 4))
-        for (let i = start_address; i < memory.length; i++) {
-            let chr = memory[i]
-            row.push(hexify(chr, 2))
-            if (row.length == 8 + 1) {
-                rows.push(row.join(" "))
-                row = []
-                row.push(hexify(i, 4))
-
-            }
-            if (length == i - start_address ||
-                (!length && chr == asm.halt)) {
-                rows.push(row.join(" "))
-                break
-            }
-        }
-        println(rows.join("\n"), "memview")
     }
 
 
@@ -359,7 +338,7 @@ import Vidchip from "./vidchip.js"
             if (cur_loop == max_loops) break
             await delay(1)
             clear("memview")
-            dump_memory(0x0000, 0x200)
+            cmdline.dump_memory(0x0000, 0x200)
 
         }
     }
@@ -377,7 +356,7 @@ import Vidchip from "./vidchip.js"
         }
 
         write(byte_array) {
-            console.log("write")
+            //console.log("write")
             if (byte_array.length > this.length) {
                 console.log(byte_array, this.length)
                 println("Error: Length of array " + byte_array.toString() + "was longer than device length of " + this.length)
@@ -387,7 +366,7 @@ import Vidchip from "./vidchip.js"
             }
         }
         read() {
-            console.log("read")
+            //console.log("read")
             output = new Uint8Array(this.length)
             for (i = 0; i < this.length; i++) {
                 output += memory[this.address + i]
@@ -413,7 +392,7 @@ import Vidchip from "./vidchip.js"
 
     function readkbd() {
         document.addEventListener('keydown', function (event) {
-            if (["Space", "ShiftLeft", "AltLeft", "ControlLeft"].includes(event.code) &&
+            if (["Space", "ShiftLeft", "AltLeft", "ControlLeft", "Tab"].includes(event.code) &&
                 event.target === document.body) {
                 event.preventDefault()
             }
@@ -423,13 +402,14 @@ import Vidchip from "./vidchip.js"
             let flagbytes = flags[0] + (flags[1] << 1) + (flags[2] << 2)
             let key = event.key
             if (event.key == "¤") key = "$"
-            echo(key)
+            cmdline.echo(key)
             input = [0, kbdDevice.keyCodes.indexOf(key), flagbytes]
-            console.log(input.map((v) => hexify(v)).join(""))
-            console.log(flags, flagbytes, input)
+            //console.log(hexify(input[1]), hexify(input[2]))
+
             kbdDevice.write(input)
-            console.log(event)
-            console.log(kbdDevice.keyCodes)
+            //console.log(event)
+            //clear("memview")
+            //cmdline.dump_memory(cpu.memory_map.io, 3)
         })
     }
     readkbd()

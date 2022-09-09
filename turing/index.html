@@ -13,12 +13,21 @@
     <header>
         <style>
             div.cmdline {
+                tab-size: 4ex;
                 background: black;
                 color: green;
                 max-height: 300px;
                 overflow-y: scroll;
                 display: flex;
                 flex-direction: column-reverse;
+                padding: left 4vh;
+                margin: 4vh;
+                top: 1em
+            }
+
+            pre#input {
+                margin-left: 4vh;
+                float: left
             }
 
             div.memview {
@@ -39,7 +48,8 @@
                 float: left;
                 font-family: 'Courier New', Courier, monospace;
                 overflow-y: scroll;
-                max-height: 100vh
+                max-height: 100vh;
+                width: 40vh
             }
 
             div#screenwrap {
@@ -83,9 +93,11 @@
     <div id="memscreenwrap">
         <canvas id="memscreen" width=480 height=1250></canvas>
     </div>
-    <div class="cmdline" id="input">
+    <div class="cmdline">
+        <pre id="input">
         Hellurei!<br />
         >
+    </pre>
     </div>
     <div id="content">
 
