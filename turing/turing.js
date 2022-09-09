@@ -1,6 +1,7 @@
 import { hexify, println, clear } from "./util.js"
 import CPU from "./cpu.js"
 import Memory from "./memory.js"
+import Vidchip from "./vidchip.js"
 
 (function () {
 
@@ -100,62 +101,7 @@ import Memory from "./memory.js"
     }
     clear_screen()
 
-    class Vidchip {
-        //ram area used by vidchip currently
-        ram_start = 0xa000
-        ram_end = 0xde80
-        pixelwidth = 160
-        pixelheight = 100
-        palette = new Uint8ClampedArray(768)
-        constructor(memory) {
-            this.init_palette()
-            this.connect_memory(memory)
-        }
 
-        connect_memory(memory) {
-            this.memory = memory
-        }
-
-
-        init_palette() {
-            // for (var i=0;i<this.palette.length+3;i+=3){
-            //     let x = (i/3)%16
-            //     let y = Math.floor(i/3 / 16)
-
-            //     this.palette[i]= 0.8*x*1.5*y*4-(16-x)-(16-y)
-
-            //     let dx = 8-Math.abs(x-8)
-            //     let dy = 8-Math.abs(y-8)
-            //     this.palette[i+1]=(16*y-dy*16)+x*8-((16-y)*8)
-            //     this.palette[i+2]=(16*x-dx*16)+x*8-((y)*8)
-            // }
-            //interpolate colors between coordinates?
-            //16,0 = blue, 0,16=green, 8,8 = red
-            for (var y = 0; y < 16; y++) {
-                for (var x = 0; x < 16; x++) {
-                    let w = (1 + x * y) - 1
-                    var dx = 6, dy = 6
-                    let r = 255 - ((1 + (dx + Math.abs(x - dx))) * (dy + Math.abs(y - dy))) - 1
-                    this.palette[(y * 16 + x) * 3] = (w + r * 1.2) - ((16 - x) * (16 - y))
-                    dx = 0, dy = 16
-                    let g = 255 - ((1 + (dx + Math.abs(x - dx))) * (dy + Math.abs(y - dy))) - 1
-                    this.palette[(y * 16 + x) * 3 + 1] = (w + g) - ((16 - x) * (16 - y))
-                    dx = 14; dy = 0
-                    let b = 255 - ((1 + (dx + Math.abs(x - dx))) * (dy + Math.abs(y - dy))) - 1
-                    this.palette[(y * 16 + x) * 3 + 2] = (w + b) - ((16 - x) * (16 - y))
-                    dx = 0; dy = 16
-                    //let b2 = 255-((1+(dx+Math.abs(x-dx)))*(dy+Math.abs(y-dy)))-1
-                    this.palette[(y * 16 + x) * 3 + 2] = w / 8 + this.palette[(y * 16 + x) * 3 + 2]
-                }
-            }
-        }
-        test_screen() {
-            for (var pos = ram_start; pos <= this.ram_end; pos++) {
-                this.memory[pos] = pos % 256
-            }
-            SVGFEDisplacementMapElement()
-        }
-    }
 
     let video = new Vidchip(memory)
 
@@ -200,13 +146,16 @@ import Memory from "./memory.js"
     blit(0x2000, 8, 8, 160, clip(0x1000 + 8 + 160 * 8, 8, 8, 160))
 
     var ctx
-    function update_screen() {
-        var canvas = document.getElementById("screen")
+    function update_screen(elem_id, start, end, monochrome) {
+        console.log(elem_id, start, end)
+        elem_id = elem_id || "screen"
+        var canvas = document.getElementById(elem_id)
         ctx = canvas.getContext('2d')
-        var monochrome = false
-        var start_address = 0x0000
-        var end_address = 0xffff
+        var monochrome = Boolean(monochrome)
+        var start_address = undefined !== start ? start : video.ram_start
+        var end_address = end || video.ram_end
         var old_value = 0
+        console.log(start_address, end_address)
 
         var style = null
 
@@ -214,12 +163,13 @@ import Memory from "./memory.js"
         const bitscale = 32 / 8
 
         var imageData = ctx.createImageData(canvas.width, canvas.height)
-        for (let i = start_address; i != end_address; i++) {
+        for (let i = 0; i != end_address - start_address; i++) {
             var value = memory[start_address + i]
+            // Modulate to make differences between adjacent colors clearer
             if (monochrome) {
                 var r = value
-                var g = r
-                var b = r
+                var g = value - 8 + (i % 2) * 4
+                var b = value + 16 - (i % 2) * 8
             } else { //gotta be paletted anyway.
                 let color = value
                 // var r = (color % 4) * 64
@@ -245,7 +195,7 @@ import Memory from "./memory.js"
         }
         ctx.putImageData(imageData, 0, 0)
     }
-    update_screen()
+    //update_screen()
 
     memory.pointer = 0x000
     memory.append([
@@ -318,7 +268,7 @@ import Memory from "./memory.js"
     }
 
     update_screen()
-
+    update_screen("memscreen", 0, memory.length, "monochrome")
 
 
     function delay(ms) {
@@ -378,17 +328,20 @@ import Memory from "./memory.js"
     }
 
     println("Dump")
-    dump_memory(0x0000, 15)
-    decode(0x0000)
+    // dump_memory(0x0000, 15)
+    // decode(0x0000)
 
-    dump_memory(0x0100, 15)
-    decode(0x0100)
+    // dump_memory(0x0100, 15)
+    // decode(0x0100)
 
 
-    dump_memory(0xff11, 31)
-    decode(0xff11)
-    dump_memory(0xff40, 31)
-    decode(0xff40)
+    // dump_memory(0xff11, 31)
+    // decode(0xff11)
+    // dump_memory(0xff40, 31)
+    // decode(0xff40)
+    println(Vidchip.ram_start)
+
+    dump_memory(0xa000, 16000)
 
     memory.pointer = 0
 
@@ -400,6 +353,7 @@ import Memory from "./memory.js"
         while (asm.halt != cpu.step()) {
             update_ui()
             update_screen()
+            //update_screen("memscreen", 0, memory.length)
             cur_loop++
             if (cur_loop == max_loops) break
             await delay(1)
@@ -408,7 +362,7 @@ import Memory from "./memory.js"
 
         }
     }
-    run()
+    //run()
 
     println("hellurei")
     println("end")

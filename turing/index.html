@@ -13,6 +13,8 @@
     <header>
         <style>
             div.memview {
+                display: inline-block;
+                font-family: 'Courier';
                 margin-left: 8px;
             }
 
@@ -34,6 +36,12 @@
             div#screenwrap {
                 float: left;
                 border: 8px solid blue
+            }
+
+            div#memscreenwrap {
+                clear: both;
+                float: left;
+                border: 8px solid magenta
             }
 
             div#screen {
@@ -61,7 +69,13 @@
 
 
     <div id="screenwrap">
-        <canvas id="screen" width=480 height=1250></canvas>
+        <canvas id="screen" width=480 height=300></canvas>
+    </div>
+    <div id="memscreenwrap">
+        <canvas id="memscreen" width=480 height=1250></canvas>
+    </div>
+    <div class="cmdline" id="input">
+        hellurei
     </div>
     <div id="content">
 
