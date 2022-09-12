@@ -41,7 +41,10 @@ export default class CPU {
         this.memory = params.memory
         this.instructions = this.init_instructions()
         this.op_counter = 0
+    }
 
+    interrupt() { // TODO: How do
+        this.instructions.halt()
     }
 
     // use list index for bytecount
@@ -60,11 +63,11 @@ export default class CPU {
     init_instructions() {
         let memory = this.memory
         let instructions = {
-            nop: [
-                () => { } // 0
-            ],
             halt: [
                 () => { this.memory[this.memory_map.flags.halt] = 0x01 }
+            ],
+            nop: [
+                () => { } // 0
             ],
             jmp: {
                 0: () => { },
@@ -201,6 +204,7 @@ export default class CPU {
 
     step() {
         let memory = this.memory
+        if (this.memory[this.memory_map.flags.halt]) { return this.opcode_types.indexOf("halt") }
         let cur_ptr = memory.pointer
         let op = memory.step()
         let instruction = this.get_instruction(op)

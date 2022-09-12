@@ -120,14 +120,19 @@ import Vidchip from "./vidchip.js"
     }
     let range = Array.from(Array(256).keys())
     //blit palette
-    blit(0x1000, 16, 16, 160, range)
+    let b_width = 16; let b_height = 16
+
+    let c_width = 12; let c_height = 12;
+    let offset_x = 0; let offset_y = 2;
+    blit(0x1000, b_width, b_height, 160, range)
+
 
     //blit and clip palette
-    blit(0x2000, 8, 8, 160, clip(0x1000 + 8 + 160 * 8, 8, 8, 160))
+    blit(0x2000, c_width, c_height, 160, clip(0x1000 + offset_x + 160 * offset_y, 12, 12, 160))
 
     var ctx
     function update_screen(elem_id, start, end, monochrome) {
-        console.log(elem_id, start, end)
+        //console.log(elem_id, start, end)
         elem_id = elem_id || "screen"
         var canvas = document.getElementById(elem_id)
         ctx = canvas.getContext('2d')
@@ -135,7 +140,7 @@ import Vidchip from "./vidchip.js"
         var start_address = undefined !== start ? start : video.ram_start
         var end_address = end || video.ram_end
         var old_value = 0
-        console.log(start_address, end_address)
+        //console.log(start_address, end_address)
 
         var style = null
 
@@ -179,14 +184,12 @@ import Vidchip from "./vidchip.js"
 
     memory.pointer = 0x000
     memory.append([
-        asm.jmp, 0x01, 0x00, //leave the first 255 bytes for data
-        asm.nop,
-        asm.nop,
-        asm.nop,
+        asm.jmp, 0x0200, //leave the first 255 bytes for data
+
     ])
-    memory.pointer = 0x0100
+    memory.pointer = cpu.memory_map.mem_start //start of memory
     memory.append([
-        asm.jmp, 0xff, 0x11
+        asm.jmp, 0xff11
     ])
     memory.pointer = 0xff11
     memory.append([
@@ -248,7 +251,7 @@ import Vidchip from "./vidchip.js"
     }
 
     update_screen()
-    update_screen("memscreen", 0, memory.length, "monochrome")
+    update_screen("memscreen", 0, memory.length, /*"monochrome"*/)
 
 
     function delay(ms) {
@@ -327,10 +330,11 @@ import Vidchip from "./vidchip.js"
 
     async function run() {
         //function run() {
-        memory.pointer = 0
+        //memory.pointer = 0
         let max_loops = 160 * 100
         let cur_loop = 0;
-        while (asm.halt != cpu.step()) {
+        while (true) {
+            cpu.step()
             update_ui()
             update_screen()
             //update_screen("memscreen", 0, memory.length)
@@ -342,11 +346,7 @@ import Vidchip from "./vidchip.js"
 
         }
     }
-    //run()
-
-    async function memview() {
-
-    }
+    run()
 
     class InputDevice {
 

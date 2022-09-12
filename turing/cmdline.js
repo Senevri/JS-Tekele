@@ -98,6 +98,12 @@ export default class Console {
             "poke": (params) => {
                 params = params.slice(1)
                 this.memory[Number(params[0])] = Number(params[1])
+            },
+            "halt": (params) => {
+                this.memory[0x0004] = 0x01
+            },
+            "run": (params) => {
+                this.memory[0x0004] = 0x00
             }
 
         }
