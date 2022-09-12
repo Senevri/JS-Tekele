@@ -5,12 +5,7 @@ import Memory from "./memory.js"
 import Vidchip from "./vidchip.js"
 (function () {
 
-    //document.getElementById("content").innerText += "asdf"
-
     println("Hello world")
-
-
-
 
     let memory = new Memory(65535)
 
@@ -85,17 +80,19 @@ import Vidchip from "./vidchip.js"
 
     let video = new Vidchip(memory)
 
-    let range = Array.from(Array(256).keys())
-    //video.video.blit palette
-    let b_width = 16; let b_height = 16
+    function test_video() {
+        let range = Array.from(Array(256).keys())
+        //video.video.blit palette
+        let b_width = 16; let b_height = 16
 
-    let c_width = 12; let c_height = 12;
-    let offset_x = 0; let offset_y = 2;
-    video.blit(0x1000, b_width, b_height, 160, range)
+        let c_width = 12; let c_height = 12;
+        let offset_x = 0; let offset_y = 2;
+        video.blit(0x1000, b_width, b_height, 160, range)
 
 
-    //video.blit and clip palette
-    video.blit(0x2000, c_width, c_height, 159, video.clip(0x1000 + offset_x + 160 * offset_y, 12, 12, 160))
+        //video.blit and clip palette
+        video.blit(0x2000, c_width, c_height, 159, video.clip(0x1000 + offset_x + 160 * offset_y, 12, 12, 160))
+    }
 
     var ctx
     function update_screen(elem_id, start, end, monochrome) {
@@ -204,7 +201,9 @@ import Vidchip from "./vidchip.js"
 
     let image_bytes = arr.join("").split("").map(val => val == "#" ? 0xff : 0x00)
     memory.write(cpu.memory_map.mem_start + 3, image_bytes)
-    video.blit(addr, 8, 8, 160, image_bytes)
+    //video.blit(addr, 8, 8, 160, image_bytes)
+    // copy bytes from written memory
+    video.blit(addr, 8, 8, 160, memory.slice(cpu.memory_map.mem_start + 3, cpu.memory_map.mem_start + 3 + 64))
     // arr.forEach((row, i) => {
     //     println(row.replace(/ /g, "."))
     //     const num_arr = row.split('').map((val) => {

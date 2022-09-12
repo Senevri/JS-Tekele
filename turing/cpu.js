@@ -23,7 +23,7 @@ export default class CPU {
     // - note: little endian vs big endian? little-endian makes some sense...
     //
     memory_map = {
-        pc: 0x0001, // equal to memory.pointer
+        pc: 0x0000, // equal to memory.pointer
         zeropage: 0x0000,
         flags: {
             accumulator: 0x0002,
@@ -53,7 +53,7 @@ export default class CPU {
     ]
 
     get_instruction(opcode) {
-        let type = opcode & 0xf
+        let type = opcode & 0xf //max 16
         let length = (opcode & 0xf0) >> 4
         //console.log(hexify(memory.pointer, 4), opcode, type, this.opcode_types[type], length)
         return { asm: this.opcode_types[type], length: length }
