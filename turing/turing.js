@@ -85,50 +85,17 @@ import Vidchip from "./vidchip.js"
 
     let video = new Vidchip(memory)
 
-    function clip(address, width, height, step) {
-        let data = []
-        memory.pointer = address
-        var counter = 0
-        var heightcounter = 0
-        for (let i = 0; i < width * height; i++) {
-            if (counter == width) {
-                //memory.pointer += 480-48//(160*3-48)
-                memory.pointer += step - width
-                counter = 0
-                heightcounter++
-            }
-            data.push(memory.step())
-            counter++
-        }
-        return data
-    }
-
-    function blit(address, width, height, step, data) {
-        memory.pointer = address
-        var counter = 0
-        var heightcounter = 0
-        for (let i = 0; i < width * height; i++) {
-            if (counter == width) {
-                //memory.pointer += 480-48//(160*3-48)
-                memory.pointer += step - width
-                counter = 0
-                heightcounter++
-            }
-            memory.push(data[i])
-            counter++
-        }
-    }
     let range = Array.from(Array(256).keys())
-    //blit palette
+    //video.video.blit palette
     let b_width = 16; let b_height = 16
 
     let c_width = 12; let c_height = 12;
     let offset_x = 0; let offset_y = 2;
-    blit(0x1000, b_width, b_height, 160, range)
+    video.blit(0x1000, b_width, b_height, 160, range)
 
 
-    //blit and clip palette
-    blit(0x2000, c_width, c_height, 160, clip(0x1000 + offset_x + 160 * offset_y, 12, 12, 160))
+    //video.blit and clip palette
+    video.blit(0x2000, c_width, c_height, 159, video.clip(0x1000 + offset_x + 160 * offset_y, 12, 12, 160))
 
     var ctx
     function update_screen(elem_id, start, end, monochrome) {
@@ -187,30 +154,35 @@ import Vidchip from "./vidchip.js"
         asm.jmp, 0x0200, //leave the first 255 bytes for data
 
     ])
+    memory.pointer = cpu.memory_map.flags.halt
+    // memory.append([
+    //     0x01
+    // ])
+
     memory.pointer = cpu.memory_map.mem_start //start of memory
     memory.append([
         asm.jmp, 0xff11
     ])
     memory.pointer = 0xff11
     memory.append([
-        asm.mov, 0x00, 0xa0f4,
-        asm.add, 0x01, 0xff14,
-        asm.add, 0x01, 0xff12,
-        asm.add, 0x01, 0x00, 0x01,
-        asm.jeq, 0xff, 0xff14, 0xff40,
+        asm.mov, 0x00, 0xa0a1, //vidram + 161, keep border whole
+        asm.add, 0x01, 0xff14, //increment position
+        asm.add, 0x01, 0xff12, //increment value
+        asm.add, 0x01, 0x00, 0x01, //not parsed correctly if word. This is why need actual asm
+        asm.jeq, 0xff, 0xff14, 0xff40, //jump to 0xff40 if value = ff
         asm.copy, 0xff14, 0x00, 0x01, //need to pad input
-        asm.jmp, 0xff, 0x11
+        asm.jmp, 0xff11
     ])
     memory.pointer = 0xff40
     memory.append([
-        asm.add, 0x01, 0xff13,
-        asm.jeq, 0xfe, 0xff13, 0xff60,
+        asm.add, 0x01, 0xff13, //increment top byte of position
+        asm.jeq, 0xfe, 0xff13, 0xff60, //if maxes out,
         asm.jmp, 0xff11,
         asm.nop
     ])
     memory.pointer = 0xff60
     memory.append([
-        asm.mov, 0xa0, 0xff13,
+        asm.mov, 0xa0, 0xff13, //reset top byte to start of vidram
         asm.jmp, 0xff11
     ])
 
@@ -230,14 +202,18 @@ import Vidchip from "./vidchip.js"
         " ###### ",
     ]
 
-    arr.forEach((row, i) => {
-        println(row.replace(/ /g, "."))
-        const num_arr = row.split('').map((val) => {
-            return val == "#" ? 0xff : 0x00
-        })
+    let image_bytes = arr.join("").split("").map(val => val == "#" ? 0xff : 0x00)
+    memory.write(cpu.memory_map.mem_start + 3, image_bytes)
+    video.blit(addr, 8, 8, 160, image_bytes)
+    // arr.forEach((row, i) => {
+    //     println(row.replace(/ /g, "."))
+    //     const num_arr = row.split('').map((val) => {
+    //         return val == "#" ? 0xff : 0x00
+    //     })
+    //     console.log(num_arr)
+    //     memory.write(addr + 160 * i, num_arr)
 
-        memory.write(addr + 160 * i, num_arr)
-    })
+    // })
 
     // draw "screen borders for debugging".
     // Cheating in that it doesn't use memory operations.

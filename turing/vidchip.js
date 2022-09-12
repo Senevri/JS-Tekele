@@ -17,6 +17,39 @@ export default class Vidchip {
         this.memory = memory
     }
 
+    clip(address, width, height, step) {
+        let data = []
+        this.memory.pointer = address
+        var counter = 0
+        var heightcounter = 0
+        for (let i = 0; i < width * height; i++) {
+            if (counter == width) {
+                //memory.pointer += 480-48//(160*3-48)
+                this.memory.pointer += step - width
+                counter = 0
+                heightcounter++
+            }
+            data.push(this.memory.step())
+            counter++
+        }
+        return data
+    }
+
+    blit(address, width, height, step, data) {
+        this.memory.pointer = address
+        var counter = 0
+        var heightcounter = 0
+        for (let i = 0; i < width * height; i++) {
+            if (counter == width) {
+                //memory.pointer += 480-48//(160*3-48)
+                this.memory.pointer += step - width
+                counter = 0
+                heightcounter++
+            }
+            this.memory.push(data[i])
+            counter++
+        }
+    }
 
     init_palette() {
         // for (var i=0;i<this.palette.length+3;i+=3){
