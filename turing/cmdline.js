@@ -14,13 +14,19 @@ export default class Console {
         "jeq": 0x56,
     }
 
-    constructor(memory) {
-        this.memory = memory
+    constructor(video, cpu) {
+        this.autodump_on = true
+        this.cpu = cpu
+        this.memory = cpu.memory
+        this.video = video
+        this.dump_range = { start: 0x00, end: 0x200 }
+        this.delay = 1
     }
 
     dump_memory(start_address, length, elem_id) {
         let memory = this.memory
-        if (!start_address) start_address = 0;
+        if (undefined === start_address) start_address = this.dump_range.start;
+        if (undefined === length) length = this.dump_range.end - this.dump_range.start
         //println("memory size: " + memory.length)
         let rows = []
         let row = []
@@ -34,8 +40,7 @@ export default class Console {
                 row.push(hexify(i + 1, 4))
 
             }
-            if (length == i - start_address ||
-                (!length && chr == this.asm.halt)) {
+            if (length == i - start_address) {
                 rows.push(row.join(" "))
                 break
             }
@@ -46,6 +51,7 @@ export default class Console {
     echo(str, element_id) {
         if (["Control", "Shift", "Alt", "Escape"].includes(str)) return
         if (str == "Enter") {
+            console.log(inputbuffer.join(""))
             this.parse_buffer()
             str = "\n>"
 
@@ -67,7 +73,7 @@ export default class Console {
             if (str == ' ') str = " "
             inputbuffer.push(str)
         }
-        console.log(inputbuffer.join(""))
+        //console.log(inputbuffer.join(""))
 
         let input = document.getElementById(element_id || "input")
         input.innerText = inputbuffer.map(k => k != "\t" ? k : "    ").join("")
@@ -84,33 +90,74 @@ export default class Console {
         let command = inputbuffer.join("").slice(start)
         console.log(start, "command " + command)
 
-        const tokens = command.replace(",", " ").split(" ").filter(n => n.trim())
+        const tokens = command.replaceAll(",", " ").split(" ").filter(n => n.trim())
         const commands = {
+            "autodump": (params) => {
+                if (params.length == 0) {
+                    this.echo("autodump_" + this.autodump_on ? "on" : "off")
+                    this.echo("\n")
+                } else {
+                    console.log("params", params)
+                    const on_off = { "on": true, "off": false }
+                    if (params[0] in on_off) {
+                        this.autodump_on = on_off[params[0]]
+                    }
+                    if (params.length == 3) {
+                        this.dump_range.start = Number(params[1])
+                        this.dump_range.end = Number(params[2])
+                    }
+                }
+            },
             "dump": (params) => {
                 clear("memview")
-                params = params.slice(1)
-                console.log(params, Number(params[0]), Number(params[1]))
-                this.dump_memory(Number(params[0]), Number(params[1], "content"))
+                //console.log(params, Number(params[0]), Number(params[1]))
+                this.autodump_on = false
+                this.dump_memory(Number(params[0]), Number(params[1], "memview"))
             },
             "clear": (params) => {
                 clear("memview")
             },
             "poke": (params) => {
-                params = params.slice(1)
-                this.memory[Number(params[0])] = Number(params[1])
+                const mem_start = params[0]
+                const data = params.slice(1)
+
+                for (const [i, v] of data.entries()) {
+                    this.memory[Number(mem_start) + i] = Number(v)
+                }
+
             },
             "halt": (params) => {
                 this.memory[0x0004] = 0x01
             },
             "run": (params) => {
                 this.memory[0x0004] = 0x00
+                console.log(params)
+                if (params.lenght == 2) {
+                    this.memory.pointer = params[0]
+                }
+            },
+            "delay": (params) => {
+                this.delay = Number(params[0])
+            },
+            "cls": (params) => {
+                //this.video.clear_screen()
+                this.video.clear_vidram()
+            },
+            "cpuclock": (params) => {
+                console.log("cpu clock", this.cpu.clock)
+                this.cpu.clock = Number(params[0])
+                console.log("cpu clock", this.cpu.clock)
             }
+
+
+
+
+
 
         }
         console.log(tokens)
         if (tokens[0] in commands) {
-
-            commands[tokens[0]](tokens)
+            commands[tokens[0]](tokens.slice(1))
         }
 
     }

@@ -1,6 +1,8 @@
 // Memory = (function(){
+import { println, hexify } from "./util.js"
 
 export default class Memory extends Uint8Array {
+
     pointer = 0
 
     push(uint8) {
@@ -8,8 +10,17 @@ export default class Memory extends Uint8Array {
         this.pointer++
     }
 
+    clear(start, end, value) {
+        if (!value) value = 0
+        console.log(start, end, value)
+        for (let i = start; i < end + 1; i++) {
+            this[i] = value
+            //assert(this[i] == value)
+        }
+    }
+
     append(arr) {
-        //println(arr)
+        //console.log("append input", arr.map(v => hexify(v)))
         arr.forEach((e) => {
             if (e > 0xff) { // big endian
                 this.push(e >> 8)

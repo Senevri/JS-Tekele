@@ -9,8 +9,6 @@ import Vidchip from "./vidchip.js"
 
     let memory = new Memory(65535)
 
-    let cmdline = new Console(memory)
-
     function to_word(b1, b2) {
         return b1 << 8 + b2
     }
@@ -41,6 +39,9 @@ import Vidchip from "./vidchip.js"
         console.assert(opcodes[asm[key]] == key)
         console.assert(cpu.get_instruction(asm[key]).length == asm[key] >> 4)
     }
+    //add sugar
+    asm.sta = 0x13
+
     //console.log(opcodes)
 
     // Helpers
@@ -67,18 +68,8 @@ import Vidchip from "./vidchip.js"
 
     // "screen chip"
 
-
-    function clear_screen() {
-        var canvas = document.getElementById("screen")
-        var ctx = canvas.getContext('2d')
-        ctx.fillStyle = "black"
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
-    }
-    clear_screen()
-
-
-
     let video = new Vidchip(memory)
+    let cmdline = new Console(video, cpu)
 
     function test_video() {
         let range = Array.from(Array(256).keys())
@@ -94,56 +85,6 @@ import Vidchip from "./vidchip.js"
         video.blit(0x2000, c_width, c_height, 159, video.clip(0x1000 + offset_x + 160 * offset_y, 12, 12, 160))
     }
 
-    var ctx
-    function update_screen(elem_id, start, end, monochrome) {
-        //console.log(elem_id, start, end)
-        elem_id = elem_id || "screen"
-        var canvas = document.getElementById(elem_id)
-        ctx = canvas.getContext('2d')
-        var monochrome = Boolean(monochrome)
-        var start_address = undefined !== start ? start : video.ram_start
-        var end_address = end || video.ram_end
-        var old_value = 0
-        //console.log(start_address, end_address)
-
-        var style = null
-
-        const scale = canvas.width / video.pixelwidth
-        const bitscale = 32 / 8
-
-        var imageData = ctx.createImageData(canvas.width, canvas.height)
-        for (let i = 0; i != end_address - start_address; i++) {
-            var value = memory[start_address + i]
-            // Modulate to make differences between adjacent colors clearer
-            if (monochrome) {
-                var r = value
-                var g = value - 8 + (i % 2) * 4
-                var b = value + 16 - (i % 2) * 8
-            } else { //gotta be paletted anyway.
-                let color = value
-                // var r = (color % 4) * 64
-                // var g = ((color >> 2) % 8) * 32
-                // var b = ((color >> 5) % 8) * 32
-                var r = video.palette[3 * color]
-                var g = video.palette[3 * color + 1]
-                var b = video.palette[3 * color + 2]
-            }
-            var x = i % 160
-            var y = Math.floor(i / 160)
-            for (let zi = 0; zi < scale; zi++) {
-                for (let j = 0; j < scale; j++) {
-                    let position = ((x * scale) + (scale * (y * canvas.width))) * bitscale
-                    position = position + ((zi + j * canvas.width) * bitscale)
-                    imageData.data[position] = r
-                    imageData.data[position + 1] = g
-                    imageData.data[position + 2] = b
-                    imageData.data[position + 3] = 255
-                }
-            }
-
-        }
-        ctx.putImageData(imageData, 0, 0)
-    }
     //update_screen()
 
     memory.pointer = 0x000
@@ -156,32 +97,94 @@ import Vidchip from "./vidchip.js"
     //     0x01
     // ])
 
+    //let's create a program to write the image below to screen.
+
+    memory.pointer = cpu.memory_map.mem_start + 0x100 //0x300
+    const code_block = memory.pointer
+    const vid_start_pos = video.ram_start + 50 * 160 + 80 - 2
+    console.log(hexify(code_block, 4), hexify(vid_start_pos, 4))
+    memory.append([
+        0x00, //row
+        0x00, //column
+        //asm.jmp, 0xff11, //skip non-working code for now.
+        asm.jeq, 8, code_block, 0xff11, //if row 8, exit
+        //asm.jeq, 8, code_block, 0x370, //if row 8, loop
+        asm.copy, cpu.memory_map.mem_start + 3, vid_start_pos,
+        asm.nop,
+        asm.nop,
+        asm.add, 1, code_block + 1,
+        asm.add, 1, code_block + 10,
+        asm.add, 1, code_block + 12,
+        asm.jeq, 8, code_block + 1, code_block + 0x30, //if column 8,
+        asm.jmp, code_block + 2 //jump to copying
+    ])
+
+    memory.pointer = code_block + 0x30
+    memory.append([
+        asm.mov, 0x00, code_block + 1,
+        asm.add, 0x01, code_block,
+        0x44, 0, 152, code_block + 11,
+        asm.nop,
+        asm.jmp, 0x321//code_block + 2
+    ])
+
+    memory.pointer = code_block + 0x70
+    memory.append([
+        asm.halt,
+        asm.mov, 0x00, code_block + 1,
+        asm.mov, 0x00, code_block,
+        asm.mov, 0x02, code_block + 10,
+        asm.mov, 0x03, code_block + 11,
+        asm.mov, 0xbf, code_block + 12,
+        asm.mov, 0x8e, code_block + 13,
+        0x23, code_block + 13, //move value to acc
+        0x24, code_block + 0x100, //add value to acc
+        0x44, 0x00, 0x02, code_block + 13, //update value
+        asm.jmp, 0x302
+    ])
+
+    memory.pointer = code_block + 0x100
+    memory.append([0, 0])
+
+
     memory.pointer = cpu.memory_map.mem_start //start of memory
     memory.append([
-        asm.jmp, 0xff11
+        asm.jmp, 0x0302 // skip the row data, which is also "halt" code
+        //asm.jmp, 0xff11
     ])
     memory.pointer = 0xff11
     memory.append([
         asm.mov, 0x00, 0xa0a1, //vidram + 161, keep border whole
         asm.add, 0x01, 0xff14, //increment position
         asm.add, 0x01, 0xff12, //increment value
-        asm.add, 0x01, 0x00, 0x01, //not parsed correctly if word. This is why need actual asm
-        asm.jeq, 0xff, 0xff14, 0xff40, //jump to 0xff40 if value = ff
-        asm.copy, 0xff14, 0x00, 0x01, //need to pad input
+        //asm.add, 0x01, 0x00, 0x01, //not parsed correctly if word. This is why need actual asm
+        asm.jeq, 0xff, 0xff14, 0xff40, //jump to 0xff40 if 0xff14 value = ff
+        asm.jeq, 0xde, 0xff13, 0xff60, //if big byte maxes out,
+        //asm.copy, 0xff14, 0x00, 0x01, //need to pad input
         asm.jmp, 0xff11
     ])
     memory.pointer = 0xff40
     memory.append([
         asm.add, 0x01, 0xff13, //increment top byte of position
-        asm.jeq, 0xfe, 0xff13, 0xff60, //if maxes out,
+        //asm.mov, 0x00, 0xff14 //clear low byte
         asm.jmp, 0xff11,
         asm.nop
     ])
     memory.pointer = 0xff60
     memory.append([
+        asm.jeq, 0x80, 0xff14, 0xff70, //if little byte maxes out
+        asm.nop,
+        asm.jmp, 0xff11
+
+    ])
+    memory.pointer = 0xff70
+    memory.append([ //big and little byte maxed out
+        asm.halt,
         asm.mov, 0xa0, 0xff13, //reset top byte to start of vidram
+        asm.mov, 0xa1, 0xff14,
         asm.jmp, 0xff11
     ])
+
 
 
     memory.pointer = video.ram_start + 50 * 160 + 80 - 2
@@ -203,16 +206,7 @@ import Vidchip from "./vidchip.js"
     memory.write(cpu.memory_map.mem_start + 3, image_bytes)
     //video.blit(addr, 8, 8, 160, image_bytes)
     // copy bytes from written memory
-    video.blit(addr, 8, 8, 160, memory.slice(cpu.memory_map.mem_start + 3, cpu.memory_map.mem_start + 3 + 64))
-    // arr.forEach((row, i) => {
-    //     println(row.replace(/ /g, "."))
-    //     const num_arr = row.split('').map((val) => {
-    //         return val == "#" ? 0xff : 0x00
-    //     })
-    //     console.log(num_arr)
-    //     memory.write(addr + 160 * i, num_arr)
-
-    // })
+    //video.blit(addr, 8, 8, 160, memory.slice(cpu.memory_map.mem_start + 3, cpu.memory_map.mem_start + 3 + 64))
 
     // draw "screen borders for debugging".
     // Cheating in that it doesn't use memory operations.
@@ -225,11 +219,12 @@ import Vidchip from "./vidchip.js"
         }
     }
 
-    update_screen()
-    update_screen("memscreen", 0, memory.length, /*"monochrome"*/)
+    video.update_screen()
+    video.update_screen("memscreen", 0, memory.length, /*"monochrome"*/)
 
 
     function delay(ms) {
+        if (delay == -1) return
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
 
@@ -303,25 +298,29 @@ import Vidchip from "./vidchip.js"
 
     memory.pointer = 0
 
-    async function run() {
-        //function run() {
-        //memory.pointer = 0
-        let max_loops = 160 * 100
-        let cur_loop = 0;
-        while (true) {
-            cpu.step()
-            update_ui()
-            update_screen()
-            //update_screen("memscreen", 0, memory.length)
-            cur_loop++
-            if (cur_loop == max_loops) break
-            await delay(1)
-            clear("memview")
-            cmdline.dump_memory(0x0000, 0x200)
 
+    async function run_system() {
+        const video_fps = 30
+        cmdline.delay = 1000 / video_fps
+        let max_loops = video_fps * cpu.clock // max_loops == fps == 1khz
+        while (true) {
+            update_ui()
+            video.update_screen()
+            video.update_screen("memscreen", 0, memory.length)
+            await delay(cmdline.delay) //min 4 ms
+
+            for (let cur_loop = 0; cur_loop < max_loops; cur_loop++) {
+                cpu.step() //run max_loops steps per screen update
+            }
+
+            if (cmdline.autodump_on) {
+                clear("memview")
+                cmdline.dump_memory()
+            }
+            max_loops = video_fps * cpu.clock
         }
     }
-    run()
+    run_system()
 
     class InputDevice {
 

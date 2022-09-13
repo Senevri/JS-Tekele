@@ -1,4 +1,7 @@
 import { println } from "./util.js"
+
+// TODO: This is nothing like real hardware. Should probably halt CPU when accessing memory,
+
 export default class Vidchip {
     //ram area used by vidchip currently
     ram_start = 0xa000
@@ -9,7 +12,8 @@ export default class Vidchip {
 
     constructor(memory) {
         this.init_palette()
-        this.connect_memory(memory)
+        this.memory = memory
+        this.clear_screen()
         this.test_screen()
     }
 
@@ -49,6 +53,66 @@ export default class Vidchip {
             this.memory.push(data[i])
             counter++
         }
+    }
+
+    clear_screen() {
+        const canvas = document.getElementById("screen")
+        const ctx = canvas.getContext('2d')
+        ctx.fillStyle = "black"
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+    }
+
+    clear_vidram() {
+        console.log("clear vidram")
+        this.memory.clear(this.ram_start, this.ram_end)
+    }
+
+    update_screen(elem_id, start, end, use_monochrome) {
+        //console.log(elem_id, start, end)
+        elem_id = elem_id || "screen"
+        const canvas = document.getElementById(elem_id)
+        const ctx = canvas.getContext('2d')
+        const monochrome = Boolean(use_monochrome)
+        const start_address = undefined !== start ? start : this.ram_start
+        const end_address = end || this.ram_end
+        let old_value = 0
+        //console.log(start_address, end_address)
+
+        const scale = canvas.width / this.pixelwidth
+        const bitscale = 32 / 8
+
+        var imageData = ctx.createImageData(canvas.width, canvas.height)
+        for (let i = 0; i != end_address - start_address; i++) {
+            var value = this.memory[start_address + i]
+            // Modulate to make differences between adjacent colors clearer
+            if (monochrome) {
+                var r = value
+                var g = value - 8 + (i % 2) * 4
+                var b = value + 16 - (i % 2) * 8
+            } else { //gotta be paletted anyway.
+                let color = value
+                // var r = (color % 4) * 64
+                // var g = ((color >> 2) % 8) * 32
+                // var b = ((color >> 5) % 8) * 32
+                var r = this.palette[3 * color]
+                var g = this.palette[3 * color + 1]
+                var b = this.palette[3 * color + 2]
+            }
+            var x = i % 160
+            var y = Math.floor(i / 160)
+            for (let zi = 0; zi < scale; zi++) {
+                for (let j = 0; j < scale; j++) {
+                    let position = ((x * scale) + (scale * (y * canvas.width))) * bitscale
+                    position = position + ((zi + j * canvas.width) * bitscale)
+                    imageData.data[position] = r
+                    imageData.data[position + 1] = g
+                    imageData.data[position + 2] = b
+                    imageData.data[position + 3] = 255
+                }
+            }
+
+        }
+        ctx.putImageData(imageData, 0, 0)
     }
 
     init_palette() {
