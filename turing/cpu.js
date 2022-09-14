@@ -57,9 +57,9 @@ export default class CPU {
     ]
 
     get_instruction(opcode) {
-        let type = opcode & 0xf //max 16
+        let type = opcode & 0x0f //max 16
         let length = (opcode & 0xf0) >> 4
-        //console.log(hexify(this.memory.pointer, 4), opcode, type, this.opcode_types[type], length)
+        //console.log(this.op_counter, hexify(this.memory.pointer, 4), "opc", opcode, "t", type, this.opcode_types[type], length)
         return { asm: this.opcode_types[type], length: length }
     }
 
@@ -68,9 +68,9 @@ export default class CPU {
         let memory = this.memory
         let acc_ptr = this.acc_ptr
         let instructions = {
-            halt: [
-                () => { this.memory[this.memory_map.flags.halt] = 0x01 }
-            ],
+            halt: {
+                0: () => { this.memory[this.memory_map.flags.halt] = 0x01 }
+            },
             nop: [
                 () => { } // 0
             ],
@@ -220,7 +220,7 @@ export default class CPU {
             }
         }
         let instruction = this.instructions[asm][length]
-        //console.log(asm, length, this.instructions[asm])
+        //console.log(asm, length, this.instructions[asm], msg)
         instruction()
         memory[this.memory_map.pc] = memory.pointer
         return [asm].concat(msg).join(" ")
@@ -232,7 +232,7 @@ export default class CPU {
         let cur_ptr = memory.pointer
         let op = memory.step()
         let instruction = this.get_instruction(op)
-        //console.log(instruction, memory.slice(cur_ptr, cur_ptr + instruction.length + 1), op, "current address:", hexify(cur_ptr, 4))
+        //console.log(instruction, hexify(memory.slice(cur_ptr, cur_ptr + instruction.length + 1)), op, "current address:", hexify(cur_ptr, 4))
         let msg = this.process_opcode(instruction.asm, instruction.length)
         //println(hexify(cur_ptr, 4) + ": " + msg)
         this.op_counter++

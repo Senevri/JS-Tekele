@@ -9,6 +9,7 @@ export default class Vidchip {
     pixelwidth = 160
     pixelheight = 100
     palette = new Uint8ClampedArray(768)
+    //maybe use 0xde81-oxdfff for vidchip io stuff, sprites?
 
     constructor(memory) {
         this.init_palette()

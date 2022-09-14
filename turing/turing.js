@@ -3,6 +3,7 @@ import Console from "./cmdline.js"
 import CPU from "./cpu.js"
 import Memory from "./memory.js"
 import Vidchip from "./vidchip.js"
+
 (function () {
 
     println("Hello world")
@@ -18,8 +19,9 @@ import Vidchip from "./vidchip.js"
     })
 
     let asm = {
-        "nop": 0x01,
         "halt": 0x00,
+        "nop": 0x01,
+
         "jmp": 0x22, // = 32+2
         "mov": 0x33,
         "add": 0x34,
@@ -103,52 +105,56 @@ import Vidchip from "./vidchip.js"
     const code_block = memory.pointer
     const vid_start_pos = video.ram_start + 50 * 160 + 80 - 2
     console.log(hexify(code_block, 4), hexify(vid_start_pos, 4))
-    memory.append([
-        0x00, //row
-        0x00, //column
-        //asm.jmp, 0xff11, //skip non-working code for now.
-        asm.jeq, 8, code_block, 0xff11, //if row 8, exit
-        //asm.jeq, 8, code_block, 0x370, //if row 8, loop
-        asm.copy, cpu.memory_map.mem_start + 3, vid_start_pos,
-        asm.nop,
-        asm.nop,
-        asm.add, 1, code_block + 1,
-        asm.add, 1, code_block + 10,
-        asm.add, 1, code_block + 12,
-        asm.jeq, 8, code_block + 1, code_block + 0x30, //if column 8,
-        asm.jmp, code_block + 2 //jump to copying
-    ])
 
-    memory.pointer = code_block + 0x30
-    memory.append([
-        asm.mov, 0x00, code_block + 1,
-        asm.add, 0x01, code_block,
-        0x44, 0, 152, code_block + 11,
-        asm.nop,
-        asm.jmp, 0x321//code_block + 2
-    ])
+    function copy_image_to_screen() {
+        memory.append([
+            0x00, //row
+            0x00, //column
+            //asm.jmp, 0xff11, //skip non-working code for now.
+            asm.jeq, 8, code_block, 0xff11, //if row 8, exit
+            //asm.jeq, 8, code_block, 0x370, //if row 8, loop
+            asm.copy, cpu.memory_map.mem_start + 3, vid_start_pos,
+            asm.nop,
+            asm.nop,
+            asm.add, 1, code_block + 1,
+            asm.add, 1, code_block + 10,
+            asm.add, 1, code_block + 12,
+            asm.jeq, 8, code_block + 1, code_block + 0x30, //if column 8,
+            asm.jmp, code_block + 2 //jump to copying
+        ])
 
-    memory.pointer = code_block + 0x70
-    memory.append([
-        asm.halt,
-        asm.mov, 0x00, code_block + 1,
-        asm.mov, 0x00, code_block,
-        asm.mov, 0x02, code_block + 10,
-        asm.mov, 0x03, code_block + 11,
-        asm.mov, 0xbf, code_block + 12,
-        asm.mov, 0x8e, code_block + 13,
-        0x23, code_block + 13, //move value to acc
-        0x24, code_block + 0x100, //add value to acc
-        0x44, 0x00, 0x02, code_block + 13, //update value
-        asm.jmp, 0x302
-    ])
+        memory.pointer = code_block + 0x30
+        memory.append([
+            asm.mov, 0x00, code_block + 1,
+            asm.add, 0x01, code_block,
+            0x44, 0, 152, code_block + 11,
+            asm.nop,
+            asm.jmp, 0x321//code_block + 2
+        ])
 
-    memory.pointer = code_block + 0x100
-    memory.append([0, 0])
+        memory.pointer = code_block + 0x70
+        memory.append([
+            asm.halt,
+            asm.mov, 0x00, code_block + 1,
+            asm.mov, 0x00, code_block,
+            asm.mov, 0x02, code_block + 10,
+            asm.mov, 0x03, code_block + 11,
+            asm.mov, 0xbf, code_block + 12,
+            asm.mov, 0x8e, code_block + 13,
+            0x23, code_block + 13, //move value to acc
+            0x24, code_block + 0x100, //add value to acc
+            0x44, 0x00, 0x02, code_block + 13, //update value
+            asm.halt
+            //asm.jmp, 0x302
+        ])
 
+        memory.pointer = code_block + 0x100
+        memory.append([0, 0])
+    }
 
     memory.pointer = cpu.memory_map.mem_start //start of memory
     memory.append([
+        0x00,
         asm.jmp, 0x0302 // skip the row data, which is also "halt" code
         //asm.jmp, 0xff11
     ])
@@ -299,7 +305,14 @@ import Vidchip from "./vidchip.js"
     memory.pointer = 0
 
 
+    memory.write_rom_to_memory()
+    memory.test_rom()
+
+    update_ui()
+    video.update_screen()
+
     async function run_system() {
+        memory.pointer = 0 //clear pointer
         const video_fps = 30
         cmdline.delay = 1000 / video_fps
         let max_loops = video_fps * cpu.clock // max_loops == fps == 1khz
@@ -309,9 +322,9 @@ import Vidchip from "./vidchip.js"
             video.update_screen("memscreen", 0, memory.length)
             await delay(cmdline.delay) //min 4 ms
 
-            for (let cur_loop = 0; cur_loop < max_loops; cur_loop++) {
-                cpu.step() //run max_loops steps per screen update
-            }
+            //for (let cur_loop = 0; cur_loop < max_loops; cur_loop++) {
+            //    cpu.step() //run max_loops steps per screen update
+            //}
 
             if (cmdline.autodump_on) {
                 clear("memview")
@@ -393,3 +406,4 @@ import Vidchip from "./vidchip.js"
     println("end")
 
 })();
+
