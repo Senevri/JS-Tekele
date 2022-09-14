@@ -1,41 +1,57 @@
 // Memory = (function(){
 import rom from "./rom.js"
-import { println, hexify } from "./util.js"
+import { println, hexify, assert } from "./util.js"
 import ROM from "./rom.js"
 export default class Memory extends Uint8Array {
 
     pointer = 0
     petsciirom_base64 = ROM.petsciirom_base64.join("")
 
-    test_rom() { //Only works in 160w mode correctly
+    test_rom(col_bits) { //Only works in 160w mode correctly
+        if (!col_bits) col_bits = 8
         const rom = this.petsciirom_base64
-        const num_per_row = 20
-        const max_rows = 12
+        let max_bits = 8 / col_bits
+        const num_per_row = 20 * max_bits
+        const max_rows = 12 / max_bits
         const vals = Uint8Array.from(this.slice(0xe000, 0xe000 + 8 * num_per_row * max_rows))
-        console.log(vals)
         this.pointer = 0xa000
+        const color = (col_bits == 8 ? 255 : 2);
         let i = 0
+
         while (8 * i + 8 <= vals.length) {
             i++
             if (i == max_rows * num_per_row + 1) break;
             for (let b of vals.slice(8 * (i - 1), 8 * i)) {
-                for (let c of b.toString(2).padStart(8, "0")) {
-                    this.push([c == "1" ? 255 : 0])
+                this[this.pointer] = 0
+                let bitstring = b.toString(2).padStart(8, "0")
+                //this[this.pointer] = 0
+
+                for (let bitstring_pos = 0; bitstring_pos < bitstring.length; bitstring_pos += max_bits) {
+                    let bits = bitstring.slice(bitstring_pos, bitstring_pos + max_bits)
+                    if (max_bits == 1) {
+                        this[this.pointer] = (bits[0] == "1" ? color : 0)
+                    } else {
+                        this[this.pointer] = (bits[0] == "1" ? color << 4 : 0)
+                        this[this.pointer] += (bits[1] == "1" ? color : 0)
+                    }
+
+                    this.pointer++
+                    this[this.pointer] = 0
                 }
-                this.pointer = this.pointer + 152 //depends on vidrom width
+                this.pointer = this.pointer + 160 - col_bits //depends on vidrom width
             }
 
+
             if (i % num_per_row) {
-                console.log(i)
-                this.pointer = this.pointer + 8 - 8 * 160
+                this.pointer = this.pointer + col_bits - 8 * 160
             } else {
-                console.log("newline", i)
-                this.pointer = this.pointer + 8 - 8 * num_per_row
+                this.pointer = this.pointer + col_bits - col_bits * num_per_row
                 //this.pointer = this.pointer - 8 * num_per_row
             }
 
         }
     }
+
 
     write_rom_to_memory() {
         const rom = this.petsciirom_base64

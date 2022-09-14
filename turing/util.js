@@ -6,6 +6,12 @@ function hexify(int, pad) {
 
 let disable_printing = false
 
+function assert(condition, message) {
+    if (!condition) {
+        throw new Error(message || "Assertion failed");
+    }
+}
+
 function print(str, element_id) {
     if (disable_printing) return
     if (!element_id) element_id = "content"
@@ -50,5 +56,5 @@ function clear(element_id) {
 
 //})()
 export {
-    hexify, print, println, clear, echo
+    hexify, print, println, clear, echo, assert
 }

@@ -225,10 +225,6 @@ import Vidchip from "./vidchip.js"
         }
     }
 
-    video.update_screen()
-    video.update_screen("memscreen", 0, memory.length, /*"monochrome"*/)
-
-
     function delay(ms) {
         if (delay == -1) return
         return new Promise((resolve) => setTimeout(resolve, ms));
@@ -306,19 +302,34 @@ import Vidchip from "./vidchip.js"
 
 
     memory.write_rom_to_memory()
-    memory.test_rom()
+
 
     update_ui()
+    //video.screenmode = 1
+    video.set_mode(0)
+    //video.clear_screen()
+    video.test_screen()
+    memory.test_rom(video.screenmodes[video.screenmode].color_bits)
+
+
     video.update_screen()
+    video.set_mode(0)
+    video.update_screen("memscreen", 0, memory.length, /*"monochrome"*/)
+
+    cmdline.dump_range.start = 0xa000
+    video.clear_screen()
 
     async function run_system() {
         memory.pointer = 0 //clear pointer
-        const video_fps = 30
+        const video_fps = 20
+        cpu.clock = 1
         cmdline.delay = 1000 / video_fps
         let max_loops = video_fps * cpu.clock // max_loops == fps == 1khz
         while (true) {
             update_ui()
+            video.set_mode(0)
             video.update_screen()
+            video.set_mode(0)
             video.update_screen("memscreen", 0, memory.length)
             await delay(cmdline.delay) //min 4 ms
 
