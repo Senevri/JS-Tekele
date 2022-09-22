@@ -4,8 +4,26 @@ import { println, hexify, assert } from "./util.js"
 import ROM from "./rom.js"
 export default class Memory extends Uint8Array {
 
-    pointer = 0
     petsciirom_base64 = ROM.petsciirom_base64.join("")
+
+    get pointer() {
+        // console.log("get", hexify((this[0]<<8) + this[1]))
+        return (this[0]<<8) + this[1]
+    }
+
+    set pointer(pointer) {
+        if (pointer) {
+            
+            this[0] = pointer >> 8
+            this[1] = pointer & 0xff
+            assert(pointer == (this[0] << 8)+this[1])
+            
+            /*
+            console.log("hex", hexify(this[0]), hexify(this[1]), hexify(pointer))
+            console.log("set", pointer, (this[0] << 8) + this[1])
+            */      
+        }
+    }
 
     test_rom(col_bits) { //Only works in 160w mode correctly
         if (!col_bits) col_bits = 8

@@ -163,13 +163,14 @@ export default class Console {
 
             },
             "halt": (params) => {
-                this.memory[0x0004] = 0x01
+                this.memory[this.cpu.memory_map.flags.halt] = 0x01
             },
             "run": (params) => {
-                this.memory[0x0004] = 0x00
-                console.log(params)
-                if (params.lenght == 2) {
-                    this.memory.pointer = params[0]
+                this.memory[this.cpu.memory_map.flags.halt] = 0x00
+                console.log(params, Number(params), params.length)
+                if (params.lenght == 1) {
+
+                    this.memory.pointer = Number(params[0])
                 }
             },
             "delay": (params) => {
@@ -183,7 +184,12 @@ export default class Console {
                 console.log("cpu clock", this.cpu.clock)
                 this.cpu.clock = Number(params[0])
                 console.log("cpu clock", this.cpu.clock)
-            }
+            },
+            "video": (params) => {
+                this.video_off = false
+                if (params[-1] == "off") this.video_off = true 
+
+            } 
 
 
 

@@ -22,16 +22,25 @@ export default class CPU {
     // if length = 2    jmp to address, add, mov add 2 bytes to acc.
     // - note: little endian vs big endian? little-endian makes some sense...
     //
-    memory_map = {
-        pc: 0x0000, // equal to memory.pointer
+        
+    memory_map = { 
+    
+        pointer: 0x0000,
         zeropage: 0x0000,
-        flags: {
+        registers: {
             accumulator: 0x0002,
-            halt: 0x0004
+            hi: 0x0003,
+            lo: 0x0004
+        },
+        flags: {
+            halt: 0x0008
         },
         io: 0x0010,
-        stack: 0x0100, //stack pointer
+        stack_pointer: 0x0100,//stack pointer
+        stack: 0x0101, //stack start
         mem_start: 0x0200, //maybe?
+        char_rom: 0xe00,
+
     }
     acc_ptr = this.memory_map.flags.accumulator
     //memory=null
@@ -199,15 +208,16 @@ export default class CPU {
         return instructions
     }
 
-    process_opcode(asm, length) {
+    process_opcode(instruction) {
+        const asm = instruction.asm
+        const length = instruction.length
         let memory = this.memory
-        let pc = this.memory_map.pc
         // generate message
         var bytes = []
         if (length > 0) {
-            bytes = Array.from(memory.slice(pc, length))
+            bytes = Array.from(memory.slice(memory.pointer, memory.pointer+length))
         }
-        //console.log("bytes", bytes)
+        //console.log("bytes", bytes.map(b=>hexify(b)), asm, length)
         let msg = [" "]
         while (bytes.length > 0) {
             if (bytes.length % 2 === 0) {
@@ -219,22 +229,25 @@ export default class CPU {
                 bytes.shift()
             }
         }
-        let instruction = this.instructions[asm][length]
-        //console.log(asm, length, this.instructions[asm], msg)
-        instruction()
-        memory[this.memory_map.pc] = memory.pointer
+
+        let instruction_func = this.instructions[asm][length]
+        instruction_func()
+        
         return [asm].concat(msg).join(" ")
     }
 
     step() {
         let memory = this.memory
-        if (this.memory[this.memory_map.flags.halt]) { return this.opcode_types.indexOf("halt") }
+        if (this.memory[this.memory_map.flags.halt]) { 
+            console.log("halted on " + hexify(memory.pointer))
+            return this.opcode_types.indexOf("halt") 
+        }
         let cur_ptr = memory.pointer
         let op = memory.step()
         let instruction = this.get_instruction(op)
         //console.log(instruction, hexify(memory.slice(cur_ptr, cur_ptr + instruction.length + 1)), op, "current address:", hexify(cur_ptr, 4))
-        let msg = this.process_opcode(instruction.asm, instruction.length)
-        //println(hexify(cur_ptr, 4) + ": " + msg)
+        let msg = this.process_opcode(instruction)
+        println(hexify(cur_ptr, 4) + ": " + msg)
         this.op_counter++
         return op
     }

@@ -89,17 +89,17 @@ import Vidchip from "./vidchip.js"
 
     //update_screen()
 
-    memory.pointer = 0x000
-    memory.append([
-        asm.jmp, 0x0200, //leave the first 255 bytes for data
-
-    ])
     memory.pointer = cpu.memory_map.flags.halt
     // memory.append([
     //     0x01
     // ])
 
     //let's create a program to write the image below to screen.
+
+    memory.pointer = cpu.memory_map.mem_start
+    memory.append([
+        asm.jmp, 0xff, 0x11
+    ])
 
     memory.pointer = cpu.memory_map.mem_start + 0x100 //0x300
     const code_block = memory.pointer
@@ -154,10 +154,10 @@ import Vidchip from "./vidchip.js"
 
     memory.pointer = cpu.memory_map.mem_start //start of memory
     memory.append([
-        0x00,
-        asm.jmp, 0x0302 // skip the row data, which is also "halt" code
-        //asm.jmp, 0xff11
+        //asm.jmp, 0x0302 // skip the row data, which is also "halt" code
+        asm.jmp, 0xff11
     ])
+
     memory.pointer = 0xff11
     memory.append([
         asm.mov, 0x00, 0xa0a1, //vidram + 161, keep border whole
@@ -209,10 +209,10 @@ import Vidchip from "./vidchip.js"
     ]
 
     let image_bytes = arr.join("").split("").map(val => val == "#" ? 0xff : 0x00)
-    memory.write(cpu.memory_map.mem_start + 3, image_bytes)
+    memory.write(cpu.memory_map.mem_start + 10, image_bytes)
     //video.blit(addr, 8, 8, 160, image_bytes)
     // copy bytes from written memory
-    //video.blit(addr, 8, 8, 160, memory.slice(cpu.memory_map.mem_start + 3, cpu.memory_map.mem_start + 3 + 64))
+    //video.blit(addr, 8, 8, 160, memory.slice(cpu.memory_map.mem_start + 10, cpu.memory_map.mem_start + 10 + 64))
 
     // draw "screen borders for debugging".
     // Cheating in that it doesn't use memory operations.
@@ -230,76 +230,8 @@ import Vidchip from "./vidchip.js"
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
 
-
-
-    function encode(asm) {
-
-    }
-
-    function decode(start_addr) {
-        println("decode")
-        if (start_addr !== null) {
-            memory.pointer = start_addr
-            //println(["mp", memory.pointer, start_addr])
-        }
-        let counter = 0
-        let [cmd, value, address, addr1, addr2] = Array(5).fill(null)
-        while (cmd != "halt" && counter < 30) {
-
-            counter++
-            let pointer = memory.pointer
-
-            let code = memory.step()
-            cmd = cpu.get_instruction(code).asm
-
-            //println([pointer, code, cmd])
-            //console.log(pointer, code, cmd)
-
-            if (["mov", "add"].includes(cmd)) {
-                value = memory.step()
-                address = read_address()
-            }
-            else if (cmd == "jmp") {
-                address = read_address()
-            }
-            else if (cmd == "copy") {
-                addr1 = read_address()
-                addr2 = read_address()
-            }
-            else {
-                //nop, halt
-            }
-            //println([value, address, addr1, addr2])
-            let output = [hexify(pointer, 4),
-                cmd,
-            hexify(value, 2),
-            hexify(address, 4),
-            hexify(addr1, 4),
-            hexify(addr2, 4)]
-            //return output
-            println(output.join(" "))
-        }
-
-    }
-
     println("Dump")
-    // dump_memory(0x0000, 15)
-    // decode(0x0000)
-
-    // dump_memory(0x0100, 15)
-    // decode(0x0100)
-
-
-    // dump_memory(0xff11, 31)
-    // decode(0xff11)
-    // dump_memory(0xff40, 31)
-    // decode(0xff40)
-    println(hexify(video.ram_start))
-
-    //dump_memory(0xa000, 16000)
-
-    memory.pointer = 0
-
+    println("video ram start: " + hexify(video.ram_start))
 
     memory.write_rom_to_memory()
 
@@ -313,35 +245,41 @@ import Vidchip from "./vidchip.js"
 
     video.clear_screen("memscreen")
     video.update_screen()
-    //video.set_mode(2)
+    video.set_mode(2)
     video.update_screen("memscreen", 0, memory.length/*"monochrome"*/)
 
-    cmdline.dump_range.start = 0xa000
-    video.clear_screen()
+    cmdline.dump_range.start = 0x0300
+    //video.clear_screen()
+    //return
 
     async function run_system() {
-        memory.pointer = 0 //clear pointer
-        const video_fps = 20
+        memory.pointer = cpu.memory_map.mem_start
+        const video_fps = 30
         cpu.clock = 1
         cmdline.delay = 1000 / video_fps
         let max_loops = video_fps * cpu.clock // max_loops == fps == 1khz
+        max_loops = 1
         while (true) {
             update_ui()
-            video.set_mode(0)
-            video.update_screen()
-            //video.set_mode(2)
-            //video.update_screen("memscreen", 0, memory.length)
+            if (!cmdline.video_off) {
+                video.set_mode(0)
+                video.update_screen("screen")
+                video.set_mode(2)
+                video.update_screen("memscreen", 0, memory.length)
+            }
             await delay(cmdline.delay) //min 4 ms
 
-            //for (let cur_loop = 0; cur_loop < max_loops; cur_loop++) {
-            //    cpu.step() //run max_loops steps per screen update
-            //}
+            if (!memory[cpu.memory_map.flags.halt]) {
+                for (let cur_loop = 0; cur_loop < max_loops; cur_loop++) {
+                    cpu.step() //run max_loops steps per screen update
+                }
+            }
 
             if (cmdline.autodump_on) {
                 clear("memview")
                 cmdline.dump_memory()
             }
-            max_loops = video_fps * cpu.clock
+            //max_loops = video_fps * cpu.clock
         }
     }
     run_system()
