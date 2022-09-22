@@ -311,11 +311,12 @@ import Vidchip from "./vidchip.js"
     video.test_screen()
     memory.test_rom(video.screenmodes[video.screenmode].color_bits)
 
-
+    video.clear_screen("memscreen")
     video.update_screen()
-    video.set_mode(0)
-    video.update_screen("memscreen", 0, memory.length, /*"monochrome"*/)
+    video.set_mode(2)
+    video.update_screen("memscreen", 0, memory.length/*"monochrome"*/)
 
+    return
     cmdline.dump_range.start = 0xa000
     video.clear_screen()
 
@@ -329,8 +330,8 @@ import Vidchip from "./vidchip.js"
             update_ui()
             video.set_mode(0)
             video.update_screen()
-            video.set_mode(0)
-            video.update_screen("memscreen", 0, memory.length)
+            //video.set_mode(2)
+            //video.update_screen("memscreen", 0, memory.length)
             await delay(cmdline.delay) //min 4 ms
 
             //for (let cur_loop = 0; cur_loop < max_loops; cur_loop++) {

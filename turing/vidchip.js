@@ -13,6 +13,7 @@ export default class Vidchip {
     screenmodes = [
         { width: 160, height: 100, color_bits: 8 },
         { width: 320, height: 200, color_bits: 4 },
+        { width: 480, height: 1100, color_bits: 1}
     ]
     //maybe use 0xde81-oxdfff for vidchip io stuff, sprites?
 
@@ -61,8 +62,8 @@ export default class Vidchip {
         }
     }
 
-    clear_screen() {
-        const canvas = document.getElementById("screen")
+    clear_screen(elem_id) {
+        const canvas = document.getElementById(elem_id || "screen")
         const ctx = canvas.getContext('2d')
         ctx.fillStyle = "black"
         ctx.fillRect(0, 0, canvas.width, canvas.height)
@@ -74,11 +75,11 @@ export default class Vidchip {
     }
 
     set_mode(mode) {
-        if (!mode) mode = this.screenmode
+        mode = mode || this.screenmode 
         this.screenmode = mode
-        let _mode = this.screenmodes[mode]
-        this.pixelheight = _mode.height
-        this.pixelwidth = _mode.width
+        //console.log(mode, this.screenmode, this.screenmodes[mode])
+        this.pixelheight = this.screenmodes[mode].height
+        this.pixelwidth = this.screenmodes[mode].width
         if (this.screenmode == 1) {
             this.set_palette_16()
         }
@@ -104,8 +105,9 @@ export default class Vidchip {
         return [r, g, b]
     }
 
-    update_screen(elem_id, start, end, use_monochrome) {
+    update_screen(elem_id, start, end, use_monochrome, force_scale) {
         //console.log(elem_id, start, end)
+        console.log(this.screenmode, elem_id)
         elem_id = elem_id || "screen"
         const canvas = document.getElementById(elem_id)
         if (start || end) {
@@ -119,46 +121,74 @@ export default class Vidchip {
         const end_address = end || this.ram_end
         let old_value = 0
         const color_bits = this.screenmodes[this.screenmode].color_bits
-        let times = 8 / color_bits
+        const times = 8 / color_bits
+        if (this.screenmode==0) assert(times==1)
         //console.log(start_address, end_address)
         //console.log(times, start_address, end_address)
 
-        let scale = canvas.width / this.pixelwidth
-        const bitscale = 32 / 8
+        let scale = {
+            x: force_scale || canvas.width / this.pixelwidth,
+            y: force_scale || canvas.height / this.pixelheight
+        }
+        //const bitscale = 32 / 8
 
-        if (!Number.isInteger(scale)) {
-            scale = 2
-            if (this.pixelwidth <= 360) {
-                scale = 2
-            }
-            canvas.width = scale * this.pixelwidth
-            canvas.height = scale * this.pixelheight;
+        if (!Number.isInteger(scale.x)) {
+            scale = {x: 2, y: 2}
+    
+            canvas.width = scale.x * this.pixelwidth
+            canvas.height = scale.y * this.pixelheight
         }
 
         const imageData = ctx.createImageData(canvas.width, canvas.height)
 
-        for (let i = 0; i != end_address - start_address; i++) {
-            let vid_byte = this.memory[start_address + i]
+        const get_color_for_half_bytes = () => {
             let values = []
-            if (this.screenmode == 1) assert(times == 2)
+            for (let c = 0; c < times; c++) {
+                //values.push(17 * (vid_byte & (0xf << 4 * 0)))
+                if (c == 1) { values.push((vid_byte & 0xf0) >> 4) }
+                if (c == 0) { values.push(vid_byte & 0xf) }
+                //values.push(vid_byte & (0xf << 4 * c) >> 4 * c)
+                values.forEach((v) => assert(v < 16, "vb " + vid_byte + " val" + v))
+            }
+            return values
+        }
+
+        const get_color_for_bits = (vid_byte) => {
+            let values=[]
+            for (let c = times; c != 0; c--) {
+                //Lets use some c64-fu
+                if (vid_byte>>c) {
+                    values.push(255)
+                    vid_byte = vid_byte - (1<<c)-1
+                } else {
+                    values.push(0)
+                }
+
+            }
+            return values
+        }
+
+        console.log("times: " + times, scale, start_address, end_address)
+            
+        for (let i = 0; i != end_address - start_address; i++) {
+            const vid_byte = this.memory[start_address + i]
+            let values = []
             if (1 == times) {
                 values = [vid_byte]
-            } else {
+            } else if (times == 2) {
+                
                 assert(times == 2, "Times was " + times)
-                for (let c = 0; c < times; c++) {
-                    //values.push(17 * (vid_byte & (0xf << 4 * 0)))
-                    if (c == 1) { values.push((vid_byte & 0xf0) >> 4) }
-                    if (c == 0) { values.push(vid_byte & 0xf) }
-                    //values.push(vid_byte & (0xf << 4 * c) >> 4 * c)
-                    values.forEach((v) => assert(v < 16, "vb " + vid_byte + " val" + v))
-                }
+                values = get_color_for_half_bytes()
                 assert(values.length == 2)
                 values = values.reverse()
                 if (vid_byte == 0x02) {
                     assert((values[0] == 0 && values[1] == 2), "vid_byte 0x" + hexify(vid_byte, 2) + " vaules" + values)
                 }
-
+            } else if (times == 8) {
+                console.log(this.screenmode)
+                values = get_color_for_bits(vid_byte)
             }
+            //console.log(values)
 
 
             //assert(values.length == times)
@@ -169,17 +199,16 @@ export default class Vidchip {
                 //if (this.screenmode == 1) console.log(c)
 
                 // Modulate to make differences between adjacent colors clearer
-                if (this.screenmode == 1) assert(values[c] < 16, "value was " + values + " index " + c)
                 let rgb = this._get_color(values[c], use_monochrome)
                 //rgb = [155, 0, 155]
 
                 const x = ((i * times) % this.pixelwidth) + c
-                const y = times * Math.floor((i * times) / this.pixelwidth)
+                const y = Math.floor((i * times) / this.pixelwidth)
                 //assert(scale == 3, "Scale was " + scale.toString() + " times was " + times)
                 //console.log(x, y)
-                for (let zi = 0; zi < scale; zi++) {
-                    for (let j = 0; j < times * scale; j++) {
-                        let position = (x * scale + y * scale * canvas.width) * 4
+                for (let zi = 0; zi < scale.x; zi++) {
+                    for (let j = 0; j < scale.y; j++) {
+                        let position = (x * scale.x + y * scale.y * canvas.width) * 4
                         position += (zi + j * canvas.width) * 4
 
                         imageData.data[position] = rgb[0]
