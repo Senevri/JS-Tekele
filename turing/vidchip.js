@@ -107,7 +107,7 @@ export default class Vidchip {
 
     update_screen(elem_id, start, end, use_monochrome, force_scale) {
         //console.log(elem_id, start, end)
-        console.log(this.screenmode, elem_id)
+        //console.log(this.screenmode, elem_id)
         elem_id = elem_id || "screen"
         const canvas = document.getElementById(elem_id)
         if (start || end) {
@@ -168,7 +168,7 @@ export default class Vidchip {
             return values
         }
 
-        console.log("times: " + times, scale, start_address, end_address)
+        //console.log("times: " + times, scale, start_address, end_address)
             
         for (let i = 0; i != end_address - start_address; i++) {
             const vid_byte = this.memory[start_address + i]

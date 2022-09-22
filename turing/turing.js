@@ -313,10 +313,9 @@ import Vidchip from "./vidchip.js"
 
     video.clear_screen("memscreen")
     video.update_screen()
-    video.set_mode(2)
+    //video.set_mode(2)
     video.update_screen("memscreen", 0, memory.length/*"monochrome"*/)
 
-    return
     cmdline.dump_range.start = 0xa000
     video.clear_screen()
 
@@ -391,7 +390,7 @@ import Vidchip from "./vidchip.js"
 
     function readkbd() {
         document.addEventListener('keydown', function (event) {
-            if (["Space", "ShiftLeft", "AltLeft", "ControlLeft", "Tab"].includes(event.code) &&
+            if (["Space", "ShiftLeft", "AltLeft", "ControlLeft", "Tab", "ArrowUp", "ArrowDown"].includes(event.code) &&
                 event.target === document.body) {
                 event.preventDefault()
             }

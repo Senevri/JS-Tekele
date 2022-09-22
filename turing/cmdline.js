@@ -48,9 +48,12 @@ export default class Console {
         println(rows.join("\n"), elem_id || "memview")
     }
 
+    lastArrowUp = 0    
+
     echo(str, element_id) {
         if (["Control", "Shift", "Alt", "Escape"].includes(str)) return
         if (str == "Enter") {
+            this.lastArrowUp = 0
             console.log(inputbuffer.join(""))
             this.parse_buffer()
             str = "\n>"
@@ -60,15 +63,48 @@ export default class Console {
             str = "\t"
         }
 
-        if (str == "ArrowUp") {
-            str = ""
-            let start = inputbuffer.slice(0, -1).lastIndexOf("\n>") + 1
-            inputbuffer = inputbuffer.concat(inputbuffer.slice(start, -1))
-
+        const getBufferLine = () => {
+            let end = -1
+            let start = -1
+            for (let i=0; i<this.lastArrowUp; i++) {
+                end = start
+                start = inputbuffer.slice(0, start).lastIndexOf("\n>")
+                console.log(start, end, inputbuffer.slice(start+1, end))
+            }
+            inputbuffer = inputbuffer.concat(inputbuffer.slice(start+1, end))   
+        }
+        const clearCurrentLine =  ()=> {
+            if (inputbuffer[-1] != "\n>") {
+                inputbuffer = inputbuffer.slice(0, inputbuffer.lastIndexOf("\n>")+1)
+            }
         }
 
-        if (str == "Backspace" && inputbuffer.length > 1) {
-            inputbuffer.pop();
+        if (str == "ArrowUp") {
+            str = ""
+            //clear current line
+            clearCurrentLine()
+            //let start = inputbuffer.slice(0, -1).lastIndexOf("\n>") + 1
+            this.lastArrowUp++
+            getBufferLine()
+
+            }
+        if (str == "ArrowDown") {
+            console.log(this.lastArrowUp)
+            
+            str = ""
+            clearCurrentLine()
+            if (this.lastArrowUp == 0) {
+              return    
+            }
+            this.lastArrowUp--
+            getBufferLine()
+        }
+
+        if (str == "Backspace") {
+            // do not put it in inputbuffer and...
+             if (inputbuffer.length > 1) {
+                inputbuffer.pop();
+            }
         } else {
             if (str == ' ') str = " "
             inputbuffer.push(str)
