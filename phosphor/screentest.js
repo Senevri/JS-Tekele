@@ -1,3 +1,4 @@
+
 (function(){
     console.log("runs")
     
@@ -13,7 +14,7 @@
         document.getElementById("content").appendChild(myCanvas)    
         return myCanvas    
     }
-
+    
     const myCanvas = addCanvas()
     clear_screen(myCanvas, "purple")
 
@@ -31,9 +32,28 @@
      
     }
 
-    for (let i=(100+(720/3*100)); i<(200+720/3*230);i++) {
+    /*for (let i=(100+(720/3*100)); i<(200+720/3*230);i++) {
         sparse_color_map[i] = [255,255,255]
-    }
+    }*/
+
+    const test_image = new Image()
+    test_image.addEventListener("load", ()=>{
+        const tmpCanvas = document.createElement("canvas")
+        tmpCanvas.width = myCanvas.width/3; tmpCanvas.height = myCanvas.height
+        const ctx = tmpCanvas.getContext("2d")
+        ctx.drawImage(test_image, 0,0, tmpCanvas.width, tmpCanvas.height)
+        const imageData = ctx.getImageData(0,0, tmpCanvas.width, tmpCanvas.height)
+        for (let i=0; i<myCanvas.width*myCanvas.height/3; i++){
+            let j = i*4
+            sparse_color_map[i] = [
+                imageData.data[j],
+                imageData.data[j+1],
+                imageData.data[j+2],
+            ]
+        }
+    }, false)
+    test_image.src = "./SMPTE_Color_Bars.svg"
+
     
     async function refreshScreen(canvas) {
         const ctx = canvas.getContext("2d")
@@ -41,6 +61,7 @@
         
         //const defaultcolor = [255,255,255] //flipflop? 255:128
         const defaultcolor = [33,50,18]
+        //const defaultcolor = [0,0,0]
         let modulation = 1
         let color = defaultcolor
 
@@ -49,19 +70,20 @@
 
             
             if (!(i % canvas.width)) {
-                modulation = flipflop ? 1 : 1.2    
+                modulation = flipflop ? 1 : 1.1    
                 flipflop = !flipflop
             } 
 
-            color = defaultcolor
-            if (i in sparse_color_map) {
-                color = sparse_color_map[i]
-            }
-            if (i>canvas.width*canvas.height/6) {
-                color = [255,0,0]
-            }
-            //color = i in sparse_color_map ? sparse_color_map[i] :  defaultcolor
+            // color = defaultcolor
+            // if (i in sparse_color_map) {
+            //     color = sparse_color_map[i]
+            // }
+            color = i in sparse_color_map ? sparse_color_map[i] :  defaultcolor
 
+            color[0] = color[0] < defaultcolor[0] ? defaultcolor[0]/2 : color[0]
+            color[1] = color[1] < defaultcolor[1] ? defaultcolor[1]/2 : color[1]
+            
+            color[2] = color[2] < defaultcolor[2] ? defaultcolor[2]/2 : color[2]
             // imageData.data[index++] = color[0]/modulation
             // imageData.data[index++] = color[1]/modulation - 35
             // imageData.data[index++] = color[2]/modulation - 35
