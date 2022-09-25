@@ -84,6 +84,7 @@
             color[1] = color[1] < defaultcolor[1] ? defaultcolor[1]/2 : color[1]
             
             color[2] = color[2] < defaultcolor[2] ? defaultcolor[2]/2 : color[2]
+            
             // imageData.data[index++] = color[0]/modulation
             // imageData.data[index++] = color[1]/modulation - 35
             // imageData.data[index++] = color[2]/modulation - 35
@@ -97,19 +98,19 @@
             // imageData.data[index++] = color[2]/modulation
             // imageData.data[index++] = 255
         
-                imageData.data[index] = ((imageData.data[index++] + 2*color[0])/modulation) / 3
-                imageData.data[index] = ((imageData.data[index++] + (2*color[1])/modulation) - (35* modulation)) / 3
-                imageData.data[index] = ((imageData.data[index++] + (2*color[2])/modulation) - (45* modulation)) / 3
-                imageData.data[index++] = 255
-                imageData.data[index] = ((imageData.data[index++] + 2*color[0])/modulation) / 3
-                imageData.data[index] = ((imageData.data[index++] + 2*color[1])/modulation) / 3
-                imageData.data[index] = ((imageData.data[index++] + 2*color[2])/modulation) / 3
-                imageData.data[index++] = 255                
-                imageData.data[index] = (imageData.data[index++] + (2*color[0]/modulation) - (45*modulation)) / 3
-                imageData.data[index] = (imageData.data[index++] + (2*color[1]/modulation) - (35*modulation)) / 3
-                imageData.data[index] = (imageData.data[index++] + (2*color[2]/modulation)) / 3
-                imageData.data[index++] = 255
-            
+            imageData.data[index] = ((imageData.data[index++] + 2*color[0])/modulation) / 3
+            imageData.data[index] = ((imageData.data[index++] + (2*color[1])/modulation) - (35* modulation)) / 3
+            imageData.data[index] = ((imageData.data[index++] + (2*color[2])/modulation) - (45* modulation)) / 3
+            imageData.data[index++] = 255
+            imageData.data[index] = ((imageData.data[index++] + 2*color[0])/modulation) / 3
+            imageData.data[index] = ((imageData.data[index++] + 2*color[1])/modulation) / 3
+            imageData.data[index] = ((imageData.data[index++] + 2*color[2])/modulation) / 3
+            imageData.data[index++] = 255                
+            imageData.data[index] = (imageData.data[index++] + (2*color[0]/modulation) - (45*modulation)) / 3
+            imageData.data[index] = (imageData.data[index++] + (2*color[1]/modulation) - (35*modulation)) / 3
+            imageData.data[index] = (imageData.data[index++] + (2*color[2]/modulation)) / 3
+            imageData.data[index++] = 255
+        
             if (index >= imageData.data.length) {index=0
                 
             }
@@ -129,7 +130,7 @@
         }
         console.log(myCanvas)
         clear_screen(myCanvas, "green")
-        setInterval(()=> { refreshScreen(myCanvas) }, 50)
+        setInterval(()=> { refreshScreen(myCanvas) }, 60)
         
     } 
     runSystem()
