@@ -13,54 +13,52 @@ window.onload = ()=>{
     window.global = {}
     
     window.global.source = audioContext.createBufferSource()
-    const duration = 10
     const bps = 16
     const samplerate = 44100
     
-    window.global.sound = new Uint8Array(44+(samplerate*duration*bps/8)) // 16bit values
     window.global.soundcfg = {
-        duration: duration,
+        duration: 1,
         bps: bps,
         samplerate: samplerate,
-    }
-
-    let sound = window.global.sound
+    }    
     
-    
-    const total_len = sound.length-8
-    const audiolen = ((sound.length)-44)
-    
-    
-    //Wav header
-    const header = "RIFF".split("")
-    .map(l=>l.charCodeAt(0))
-    .concat(
-        total_len & 0xff, total_len>>8, total_len >> 16, 0,
-        "WAVE".split("")
-        .map(v=>v.charCodeAt(0)), 
-        "fmt".split("")
-        .map(v=>v.charCodeAt(0)), 
-        32,
-        16,0,0,0, 
-        1,0,
-        1,0,
-        samplerate & 0xff, samplerate>>8, 0, 0, //sample rate
-        (samplerate*bps*1/8) & 0xff, (samplerate*16*1/8)>>8, (samplerate*16*1/8)>>16, 0, 
-        1*bps/8, 0,
-        16, 0, // bits per sample
-        "data".split("")
-        .map(v=>v.charCodeAt(0)), 
-        (audiolen) & 0xff, (audiolen)>>8, (audiolen) >> 16, 0
-        )
-    console.log(header) 
         
     
     let types = ["noise", "sine", "square"]
     
     
     //console.log(sound)
-    function generateSound(type, usr_frequency, max_volume) {        
-        let sound = new Uint8Array(44+(samplerate*duration*bps/8)) // 16bit values
+    function generateSound(type, usr_frequency, max_volume, usr_duration) {        
+        const duration = usr_duration || 1
+        const sound = new Uint8Array(44+(samplerate*duration*bps/8)) // 16bit values
+
+        const total_len = sound.length-8
+        const audiolen = ((sound.length)-44)
+        
+        //Wav header
+        const header = "RIFF".split("")
+        .map(l=>l.charCodeAt(0))
+        .concat(
+            total_len & 0xff, total_len>>8, total_len >> 16, 0,
+            "WAVE".split("")
+            .map(v=>v.charCodeAt(0)), 
+            "fmt".split("")
+            .map(v=>v.charCodeAt(0)), 
+            32,
+            16,0,0,0, 
+            1,0,
+            1,0,
+            samplerate & 0xff, samplerate>>8, 0, 0, //sample rate
+            (samplerate*bps*1/8) & 0xff, (samplerate*16*1/8)>>8, (samplerate*16*1/8)>>16, 0, 
+            1*bps/8, 0,
+            16, 0, // bits per sample
+            "data".split("")
+            .map(v=>v.charCodeAt(0)), 
+            (audiolen) & 0xff, (audiolen)>>8, (audiolen) >> 16, 0
+            )
+
+        console.log(header) 
+        
 
         for (let i=0; i < header.length; i++) {
             sound[i] = header[i]
@@ -73,10 +71,11 @@ window.onload = ()=>{
         type = type || "square"
         console.log(type)
         
-        let frequency = usr_frequency || 160 
+        const frequency = usr_frequency || 160 
         window.global.soundcfg.frequency = frequency
         window.global.soundcfg.max_volume = max_volume
         window.global.soundcfg.type = type
+        window.global.soundcfg.duration = duration
 
         //DEBUG: 50=50 100 = 300, 200 = 300, 300 = 150
         let release = 0 // TODO: Implement
@@ -149,7 +148,10 @@ window.onload = ()=>{
     }
     
                 
-    function saveFile(fileName,urlFile){
+    function saveFile(sound, fileName ){
+        let blobData = new Blob([sound], {type: "audio/wav"});
+        let url = window.URL.createObjectURL(blobData);
+    
         let a = document.createElement("a");
         a.style = "display: none";
         document.body.appendChild(a);
@@ -160,11 +162,10 @@ window.onload = ()=>{
         a.remove();
     }
     
-    let blobData = new Blob([sound], {type: "audio/wav"});
-    let url = window.URL.createObjectURL(blobData);
     //let url = "pathExample/localFile.png"; // LocalFileDownload
-    //saveFile('test.wav',url);
-    generateSound(0, 100, 0.03)
+    
+    const sound = generateSound(0, 100, 0.03)
+    //saveFile(sound, 'test.wav');
             
     function putSoundToSource(sound, source) {
         audioContext.decodeAudioData(sound.buffer, (v)=>{
@@ -175,9 +176,14 @@ window.onload = ()=>{
     }
 
     function restartSound() {
-        if (window.global.source.loop) {
-            window.global.source.stop()
-        }            
+        window.global.source.stop()
+        window.global.source.buffer=null
+        window.global.source.loop=false
+        startSound()
+            
+    }
+
+    function startSound() {                    
         window.global.source = audioContext.createBufferSource()            
         let source = window.global.source
     
@@ -189,45 +195,56 @@ window.onload = ()=>{
         source.start()
     }
 
+    document.addEventListener('keyup', function (event){
+        if (!["Arro","Page"].includes(event.code.substring(0,4))){
+            window.global.source.stop()
+            window.global.source.buffer=null
+            window.global.source.loop=false
+            window.global.soundcfg.changed = true
+        }
+    })
+    window.global.soundcfg.changed=true
+
     document.addEventListener('keydown', function (event) {
         let source = window.global.source        
+        let cfg = window.global.soundcfg
+        
         document.getElementById("content").innerHTML += "<div>" + event.code + "<div>"        
+
         if (event.code == "Space" ) {
-            restartSound()
+            if (window.global.soundcfg.changed == true) {
+                startSound()
+                window.global.soundcfg.changed = false
+            }
+        }
+        else {
+            window.global.soundcfg.changed = true
         }
         if (event.code == "ArrowRight") {
             let type_index = types.indexOf(window.global.soundcfg.type)
             type_index += 1
             if (type_index == types.length) { type_index=0 }
-            //window.global.sound = generateSound(types[type_index], 200)
-            window.global.soundcfg.type = types[type_index] 
-            console.log(window.global.soundcfg)
-            restartSound()
+            window.global.soundcfg.type = types[type_index]                 
         }
 
         if (event.code == "PageUp") {
-            window.global.soundcfg.frequency += 60
-            restartSound()
+            window.global.soundcfg.frequency += 60            
         }
         if (event.code == "PageDown") {
-            window.global.soundcfg.frequency -= 60
-            restartSound()
+            window.global.soundcfg.frequency -= 60            
         }
-        
-        
+                
         if (event.code == "ArrowDown") {
-            window.global.soundcfg.max_volume = window.global.soundcfg.max_volume*0.9
-            //window.global.sound = generateSound(window.global.soundcfg.type, 200, window.global.soundcfg.max_volume*0.5)
-            restartSound()
+            window.global.soundcfg.max_volume = (cfg.max_volume>0) ? window.global.soundcfg.max_volume -0.01 : 0            
         }
+
         if (event.code == "ArrowUp") {
-            window.global.soundcfg.max_volume = (window.global.soundcfg.max_volume > 0.5) ? 0.5 : window.global.soundcfg.max_volume*1.1            
-            //window.global.sound = generateSound(window.global.soundcfg.type, 200, window.global.soundcfg.max_volume*0.5)
-            restartSound()
+            window.global.soundcfg.max_volume = (window.global.soundcfg.max_volume > 0.5) ? 0.5 : window.global.soundcfg.max_volume+0.01            
         }
         
         if (event.code == "Enter") {
             source.stop()            
+            console.log(source)
         }
         document.getElementById("cfg").innerText = JSON.stringify(window.global.soundcfg, undefined, 2)    
     })
