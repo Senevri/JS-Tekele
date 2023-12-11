@@ -4,6 +4,13 @@ function hexify(int, pad) {
     return int.toString(16).toUpperCase().padStart(pad, "0")
 }
 
+function get_lo_hi(word) {
+    return [
+        word & 0xff,
+        word >> 8
+    ]
+}
+
 let disable_printing = false
 
 function assert(condition, message) {
@@ -56,5 +63,5 @@ function clear(element_id) {
 
 //})()
 export {
-    hexify, print, println, clear, echo, assert
+    hexify, print, println, clear, echo, assert, get_lo_hi
 }

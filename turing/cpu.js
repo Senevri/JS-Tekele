@@ -1,13 +1,5 @@
 import { hexify, println } from "./util.js"
-
 // CPU = (function () {
-
-function get_lo_hi(word) {
-    return [
-        word & 0xff,
-        word >> 8
-    ]
-}
 
 export default class CPU {
     // set up instructions by bytelength, with like,
@@ -22,23 +14,13 @@ export default class CPU {
     // if length = 2    jmp to address, add, mov add 2 bytes to acc.
     // - note: little endian vs big endian? little-endian makes some sense...
     //
-    memory_map = {
-        pc: 0x0000, // equal to memory.pointer
-        zeropage: 0x0000,
-        flags: {
-            accumulator: 0x0002,
-            halt: 0x0004
-        },
-        io: 0x0010,
-        stack: 0x0100, //stack pointer
-        mem_start: 0x0200, //maybe?
-    }
-    acc_ptr = this.memory_map.flags.accumulator
-    //memory=null
 
     constructor(params) {
         this.memory = params.memory
+        this.memory_map = params.memory_map
+        this.instructionset = params.instructionset
         this.instructions = this.init_instructions()
+        this.acc_ptr = this.memory_map.flags.accumulator
         this.op_counter = 0
         this.clock = 10
     }
@@ -52,150 +34,19 @@ export default class CPU {
     }
 
     // use list index for bytecount
-    opcode_types = [
-        "halt", "nop", "jmp", "mov", "add", "copy", "jeq", "jne"
-    ]
+
 
     get_instruction(opcode) {
-        let type = opcode & 0x0f //max 16
-        let length = (opcode & 0xf0) >> 4
-        //console.log(this.op_counter, hexify(this.memory.pointer, 4), "opc", opcode, "t", type, this.opcode_types[type], length)
-        return { asm: this.opcode_types[type], length: length }
+        return this.instructionset.get_instruction(opcode)
     }
 
     // instruction index == how many bytes an instruction reads
     init_instructions() {
         let memory = this.memory
         let acc_ptr = this.acc_ptr
-        let instructions = {
-            halt: {
-                0: () => { this.memory[this.memory_map.flags.halt] = 0x01 }
-            },
-            nop: [
-                () => { } // 0
-            ],
-            jmp: {
-                0: () => { },
-                1: () => {
-                    let value = this.memory.step()
-                    this.memory.pointer += value
-                },
-                2: () => {
-                    let address = this.memory.w_step()
-                    this.memory.pointer = address
-                    //console.log("jump to", hexify(address,4), hexify(memory.pointer, 4))
-                }
-            },
-            mov: {
-                0: null,
-                1: () => {
-                    let value = this.memory.step()
-                    this.memory[acc_ptr] = value
-                },
-                2: () => {
-                    let addr = this.memory.w_step()
-                    this.memory[acc_ptr] = this.memory[addr]
-                },
-                3: () => { //3
-                    let value = memory.step()
-                    let address = memory.w_step()
-                    this.memory[address] = value
-                },
-                4: () => { //4 // should this be copy or mov?
-                    let value = memory.w_step()
-                    let address = memory.w_step()
-                    this.memory[address] = value
-                }
-
-            },
-            add: {
-                0: () => memory[acc_ptr] += 1,
-                1: () => {
-                    console.log("add to acc")
-                    let value = memory.step()
-                    memory[acc_ptr] += value
-                },
-                2: () => {
-                    console.log("add value in memory address to acc")
-                    let addr = memory.w_step()
-                    memory[acc_ptr] += memory[addr]
-                },
-                3: () => { // add byte to target
-                    //console.log("add byte")
-                    let value = memory.step()
-                    let address = memory.w_step()
-                    memory[address] += value
-                },
-                4: () => { //add word to target
-                    //console.log("add word")
-                    let value = memory.w_step()
-                    let address = memory.w_step()
-                    let bytes = get_lo_hi(value)
-                    //console.log(value, hexify(address, 4), bytes)
-                    //handle overflow
-                    if (memory[address + 1] + bytes[0] > 0xff) {
-                        bytes[1] = bytes[1] + 1
-                    }
-                    memory[address + 1] += bytes[0]
-                    memory[address] += bytes[1]
-                }
-            },
-            copy: [
-                ,
-                ,
-                ,
-                ,
-                () => {
-                    let addr1 = memory.w_step()
-                    let addr2 = memory.w_step()
-                    //console.log("copy", hexify(addr1), hexify(addr2))
-                    memory[addr2] = memory[addr1]
-                }
-            ],
-            jeq: [
-                ,
-                ,
-                ,
-                () => {
-                    console.log("jeq 3")
-                    let value = memory.step()
-                    let address = memory.w_step()
-                    memory.pointer = memory[acc_ptr] == value ?
-                        address :
-                        memory.pointer;
-                },
-                ,
-                () => {
-                    //console.log("jeq 5")
-                    let value = memory.step()
-                    let addr1 = memory.w_step()
-                    let addr2 = memory.w_step()
-                    //if addr1 == value, jump to addr2
-                    memory.pointer = memory[addr1] == value ? addr2 : memory.pointer
-                    //console.log("jeq 5", hexify(value), hexify(memory[addr1]), hexify(addr1), hexify(addr2))
-                }
-            ],
-            jne: {
-                0: null,
-                1: null,
-                2: () => {
-                    let value = memory.step()
-                    let relative_step = memory_step()
-                    memory.pointer = memory[acc_ptr] == value ? memory_pointer + relative_step : memory_pointer
-                },
-                3: () => {
-                    let value = memory.step()
-                    let address = memory.w_step()
-                    memory.pointer = memory[acc_ptr] == value ? address : memory.pointer
-                },
-                4: () => {
-                    let value = memory.step()
-                    let value2 = memory.step()
-                    let address = memory.w_step()
-                    memory.pointer = value2 == value ? address : memory.pointer
-                }
-            }
-        }
+        this.opcode_types = this.instructionset.opcode_types
+        let instructions = this.instructionset.get_instructionset(memory, this.memory_map)
+        instructions.memory = this.memory
         return instructions
     }
 
@@ -219,20 +70,21 @@ export default class CPU {
                 bytes.shift()
             }
         }
+        console.log(asm, length, this.instructions[asm], msg)
         let instruction = this.instructions[asm][length]
-        //console.log(asm, length, this.instructions[asm], msg)
+
         instruction()
         memory[this.memory_map.pc] = memory.pointer
         return [asm].concat(msg).join(" ")
     }
 
     step() {
-        let memory = this.memory
         if (this.memory[this.memory_map.flags.halt]) { return this.opcode_types.indexOf("halt") }
+        let memory = this.memory
         let cur_ptr = memory.pointer
         let op = memory.step()
         let instruction = this.get_instruction(op)
-        //console.log(instruction, hexify(memory.slice(cur_ptr, cur_ptr + instruction.length + 1)), op, "current address:", hexify(cur_ptr, 4))
+        console.log(instruction, hexify(memory.slice(cur_ptr, cur_ptr + instruction.length + 1)), op, "current address:", hexify(cur_ptr, 4))
         let msg = this.process_opcode(instruction.asm, instruction.length)
         //println(hexify(cur_ptr, 4) + ": " + msg)
         this.op_counter++
@@ -241,4 +93,3 @@ export default class CPU {
 }
 // return CPU
 // })()
-

@@ -92,8 +92,19 @@ export default class Console {
 
         const tokens = command.replaceAll(",", " ").split(" ").filter(n => n.trim())
         const commands = {
+            "help": (params) => {
+                //list all commands to the console with the echo
+                this.echo("\n")
+                for (const key in commands) {
+                    //check if the command has an optional description
+                    let optional_description = commands[key].description || ""
+                    this.echo(key +" "+  optional_description +"\n")
+                }
+            }, description: "List all commands",
+
             "autodump": (params) => {
                 if (params.length == 0) {
+                    this.echo("\n")
                     this.echo("autodump_" + this.autodump_on ? "on" : "off")
                     this.echo("\n")
                 } else {
@@ -163,5 +174,3 @@ export default class Console {
     }
 
 }
-
-

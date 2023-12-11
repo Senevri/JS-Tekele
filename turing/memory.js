@@ -1,5 +1,4 @@
 // Memory = (function(){
-import rom from "./rom.js"
 import { println, hexify, assert } from "./util.js"
 import ROM from "./rom.js"
 export default class Memory extends Uint8Array {

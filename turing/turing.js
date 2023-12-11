@@ -3,6 +3,8 @@ import Console from "./cmdline.js"
 import CPU from "./cpu.js"
 import Memory from "./memory.js"
 import Vidchip from "./vidchip.js"
+import { old_instructionset } from "./instructionsets.js"
+
 
 (function () {
 
@@ -10,12 +12,26 @@ import Vidchip from "./vidchip.js"
 
     let memory = new Memory(65535)
 
+    const memory_map = {
+        pc: 0x0000, // equal to memory.pointer
+        zeropage: 0x0000,
+        flags: {
+            accumulator: 0x0002,
+            halt: 0x0004
+        },
+        io: 0x0010,
+        stack: 0x0100, //stack pointer
+        mem_start: 0x0200, //maybe?
+    }
+
     function to_word(b1, b2) {
         return b1 << 8 + b2
     }
 
     let cpu = new CPU({
-        memory: memory
+        memory: memory,
+        memory_map: memory_map,
+        instructionset: old_instructionset
     })
 
     let asm = {
@@ -28,6 +44,9 @@ import Vidchip from "./vidchip.js"
         "copy": 0x45,
         "jeq": 0x56,
     }
+        //add sugar
+        asm.sta = 0x13
+
 
     var opcodes = {}
     cpu.opcode_types.forEach((name, index) => {
@@ -39,10 +58,9 @@ import Vidchip from "./vidchip.js"
     console.log("sanity check")
     for (let key in asm) {
         console.assert(opcodes[asm[key]] == key)
+        //console.log(key, asm[key])
         console.assert(cpu.get_instruction(asm[key]).length == asm[key] >> 4)
     }
-    //add sugar
-    asm.sta = 0x13
 
     //console.log(opcodes)
 
@@ -91,7 +109,7 @@ import Vidchip from "./vidchip.js"
 
     memory.pointer = 0x000
     memory.append([
-        asm.jmp, 0x0200, //leave the first 255 bytes for data
+        asm.jmp, memory_map.mem_start, //leave the first 255 bytes for data
 
     ])
     memory.pointer = cpu.memory_map.flags.halt
@@ -134,7 +152,7 @@ import Vidchip from "./vidchip.js"
 
         memory.pointer = code_block + 0x70
         memory.append([
-            asm.halt,
+            //asm.halt,
             asm.mov, 0x00, code_block + 1,
             asm.mov, 0x00, code_block,
             asm.mov, 0x02, code_block + 10,
@@ -154,9 +172,12 @@ import Vidchip from "./vidchip.js"
 
     memory.pointer = cpu.memory_map.mem_start //start of memory
     memory.append([
-        0x00,
-        asm.jmp, 0x0302 // skip the row data, which is also "halt" code
-        //asm.jmp, 0xff11
+        //0x00,
+        //asm.mov, cpu.memory_map.flags.accumulator, 0x01,
+        //asm.halt
+        //asm.jmp, 0x0302 // skip the row data, which is also "halt" code
+        asm.jmp, 0xff11
+        //asm.jmp, cpu.memory_map.start
     ])
     memory.pointer = 0xff11
     memory.append([
@@ -333,9 +354,9 @@ import Vidchip from "./vidchip.js"
             video.update_screen("memscreen", 0, memory.length)
             await delay(cmdline.delay) //min 4 ms
 
-            //for (let cur_loop = 0; cur_loop < max_loops; cur_loop++) {
-            //    cpu.step() //run max_loops steps per screen update
-            //}
+            for (let cur_loop = 0; cur_loop < max_loops; cur_loop++) {
+                cpu.step() //run max_loops steps per screen update
+            }
 
             if (cmdline.autodump_on) {
                 clear("memview")
@@ -384,7 +405,8 @@ import Vidchip from "./vidchip.js"
         "Enter",
         "Escape",
         "Space",
-        "Backspace"
+        "Backspace",
+        "Tab"
     ])
 
 
@@ -417,4 +439,3 @@ import Vidchip from "./vidchip.js"
     println("end")
 
 })();
-
